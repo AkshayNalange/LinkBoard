@@ -23,7 +23,7 @@ export default async function handler(req, res) {
   // CREATE POST
   if (req.method === "POST") {
     try {
-      const { title, description, url, category, tags } = req.body;
+      const { title, description, url, links, category, tags } = req.body;
 
       if (!title || !url || !category) {
         return res
@@ -39,6 +39,9 @@ export default async function handler(req, res) {
         title: title.trim(),
         description: (description || "").trim(),
         url: url.trim(),
+        links: Array.isArray(links)
+          ? links.map(l => ({ label: (l.label || "").trim(), url: (l.url || "").trim() })).filter(l => l.url)
+          : [{ label: "", url: url.trim() }],
         category: category.trim(),
         tags: Array.isArray(tags)
           ? tags.map((t) => t.trim()).filter(Boolean)
