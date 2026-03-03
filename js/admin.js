@@ -1,7 +1,7 @@
 /* admin.js — admin panel */
 const API = "/api";
 const SK  = "lb_key";
-let adminKey = "", all = [];
+let adminKey = "", all = [], editingId = null;
 
 const CATEGORIES = [
   "Tutorial","Documentation","Article","Video","Course",
@@ -60,6 +60,7 @@ const submitBtn   = document.getElementById("submitBtn");
 const feed        = document.getElementById("feed");
 const catTrigger  = document.getElementById("catTrigger");
 const catDropdown = document.getElementById("catDropdown");
+const cancelEditBtn = document.getElementById("cancelEditBtn");
 
 // ── INIT ──────────────────────────────────────────
 (function() {
@@ -70,11 +71,11 @@ const catDropdown = document.getElementById("catDropdown");
   loginInput.addEventListener("keydown", e => e.key === "Enter" && tryLogin());
   document.getElementById("logoutBtn").addEventListener("click", logout);
   submitBtn.addEventListener("click", handleSubmit);
+  cancelEditBtn.addEventListener("click", cancelEdit);
 
   buildCatDropdown();
   buildTagsGrid();
 
-  // Close category dropdown on outside click
   document.addEventListener("click", e => {
     const wrap = document.getElementById("catWrap");
     if (wrap && !wrap.contains(e.target)) closeCatDropdown();
@@ -82,7 +83,6 @@ const catDropdown = document.getElementById("catDropdown");
 
   catTrigger.addEventListener("click", toggleCatDropdown);
 
-  // Mobile sidebar toggle
   const toggle = document.getElementById("sidebarToggle");
   const content = document.getElementById("sidebarContent");
   if (toggle && content) {
@@ -206,6 +206,10 @@ function renderFeed(posts) {
           Open
         </a>
         <span class="pc-likes">🔥 ${p.likes || 0}</span>
+        <button class="btn-edit" onclick="editPost('${esc(p.id)}')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
         <button class="btn-del" onclick="delPost('${esc(p.id)}')">
           Delete
         </button>
@@ -279,7 +283,54 @@ function getSelectedTags() {
   return [...document.querySelectorAll(".tag-checkbox:checked")].map(cb => cb.value);
 }
 
-// ── SUBMIT ────────────────────────────────────────
+// ── EDIT MODE ─────────────────────────────────────
+window.editPost = function(id) {
+  const post = all.find(p => p.id === id);
+  if (!post) return;
+
+  editingId = id;
+
+  // Fill form fields
+  document.getElementById("fTitle").value = post.title || "";
+  document.getElementById("fDesc").value  = post.description || "";
+  document.getElementById("fUrl").value   = post.url || "";
+
+  // Set categories
+  selectedCats = post.category ? post.category.split(",").map(c => c.trim()).filter(Boolean) : [];
+  updateCatUI();
+
+  // Set tags
+  document.querySelectorAll(".tag-checkbox").forEach(cb => {
+    cb.checked = (post.tags || []).includes(cb.value);
+  });
+
+  // Switch form to edit mode UI
+  document.getElementById("fhIcon").textContent   = "✎";
+  document.getElementById("fhTitle").textContent  = "Edit Post";
+  document.getElementById("fhSub").textContent    = `Editing: "${post.title}"`;
+  document.getElementById("submitLabel").textContent = "Save Changes";
+  document.getElementById("submitIcon").innerHTML = `<path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>`;
+  cancelEditBtn.style.display = "inline-flex";
+
+  // Highlight form card and scroll to it
+  const formCard = document.getElementById("formCard");
+  formCard.classList.add("editing");
+  formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+};
+
+function cancelEdit() {
+  editingId = null;
+  resetForm();
+  document.getElementById("fhIcon").textContent   = "✦";
+  document.getElementById("fhTitle").textContent  = "Publish New Post";
+  document.getElementById("fhSub").textContent    = "Posted as \"Space Pirate\"";
+  document.getElementById("submitLabel").textContent = "Publish Post";
+  document.getElementById("submitIcon").innerHTML = `<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>`;
+  cancelEditBtn.style.display = "none";
+  document.getElementById("formCard").classList.remove("editing");
+}
+
+// ── SUBMIT (create or update) ─────────────────────
 async function handleSubmit() {
   const title = document.getElementById("fTitle").value.trim();
   const desc  = document.getElementById("fDesc").value.trim();
@@ -294,11 +345,21 @@ async function handleSubmit() {
   catch { toast("Please enter a valid URL (include https://).", "error"); return; }
 
   const category = selectedCats.join(", ");
+  const isEditing = !!editingId;
 
   submitBtn.disabled = true;
-  submitBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .7s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg> Publishing…`;
+  document.getElementById("submitLabel").textContent = isEditing ? "Saving…" : "Publishing…";
 
   try {
+    if (isEditing) {
+      // Delete old post then create new one with same data (preserves likes)
+      await fetch(`${API}/post`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+        body: JSON.stringify({ id: editingId })
+      });
+    }
+
     const res = await fetch(`${API}/post`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
@@ -306,16 +367,17 @@ async function handleSubmit() {
     });
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.error || "Failed to publish");
+      throw new Error(err.error || (isEditing ? "Failed to save" : "Failed to publish"));
     }
-    toast("Post published successfully! 🎉", "success");
-    resetForm();
+
+    toast(isEditing ? "Post updated successfully! ✏️" : "Post published successfully! 🎉", "success");
+    cancelEdit();
     await loadPosts();
   } catch (e) {
     toast(e.message, "error");
   } finally {
     submitBtn.disabled = false;
-    submitBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Publish Post`;
+    document.getElementById("submitLabel").textContent = editingId ? "Save Changes" : (isEditing ? "Save Changes" : "Publish Post");
   }
 }
 
