@@ -1,13 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=Fira+Code:wght@400;500&display=swap');
 
 /* ══════════════════════════════════════════════════
-   VARIABLES  
+   VARIABLES
 ══════════════════════════════════════════════════ */
 :root {
-  --cream:      #FDFBF5;
-  --cream2:     #F7F3E8;
-  --cream3:     #EDE8D8;
-  --parchment:  #F0EAD6;
+  --cream:      #FFFFFF;
+  --cream2:     #F8FAFC;
+  --cream3:     #F1F5F9;
+  --parchment:  #F8FAFC;
   --white:      #FFFFFF;
   --gold:       #2563EB;
   --gold2:      #3B82F6;
@@ -17,11 +17,11 @@
   --red:        #E11D48;
   --red2:       #FB7185;
   --red-lt:     #FFF1F2;
-  --brown:      #2C1A0E;
-  --brown2:     #4A2C1A;
-  --warm-gray:  #7A6A58;
-  --warm-gray2: #A89880;
-  --warm-gray3: #D4C8B4;
+  --brown:      #1E293B;
+  --brown2:     #334155;
+  --warm-gray:  #64748B;
+  --warm-gray2: #94A3B8;
+  --warm-gray3: #CBD5E1;
   --border:     #E2D8C4;
   --border2:    #C8B898;
   --shadow-sm:  0 1px 4px rgba(44,26,14,.08);
@@ -134,7 +134,7 @@ img{max-width:100%}
 /* ── 🔥 FIRE / LIKE BUTTON ───────────────────────── */
 .fire-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border:1.5px solid var(--border2);border-radius:999px;background:var(--white);cursor:pointer;font-family:var(--ff-b);font-size:.76rem;font-weight:600;color:var(--warm-gray);transition:all .25s var(--ease);margin-left:auto;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;min-width:56px;justify-content:center}
 .fire-btn:hover{border-color:var(--gold2);background:var(--gold-bg);color:var(--brown);transform:scale(1.05)}
-.fire-btn.liked{background:linear-gradient(135deg,#fff3cc,#fdecea);border-color:var(--gold2);color:var(--brown)}
+.fire-btn.liked{background:linear-gradient(135deg,#EFF6FF,#FFF1F2);border-color:var(--gold2);color:var(--brown)}
 .fire-btn .fire-emoji{font-size:1rem;display:inline-block;transition:transform .15s var(--ease);line-height:1}
 .fire-btn:hover .fire-emoji{transform:scale(1.2) rotate(-10deg)}
 .fire-btn .fire-count{font-family:var(--ff-m);font-size:.72rem;font-weight:500;min-width:12px;text-align:center}
@@ -213,7 +213,7 @@ img{max-width:100%}
 .login-field-label{font-size:.68rem;font-weight:700;color:var(--warm-gray);font-family:var(--ff-m);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem;display:block}
 .login-field{width:100%;background:var(--cream);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--brown);font-family:var(--ff-b);font-size:.95rem;outline:none;text-align:center;letter-spacing:.2em;transition:all .25s var(--ease)}
 .login-field:focus{border-color:var(--gold);background:var(--white);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
-.login-btn{width:100%;padding:12px;background:linear-gradient(135deg,#1e3a8a,#2563EB);border:none;border-radius:var(--radius-sm);color:#fff;font-family:var(--ff-c);font-size:1rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .25s var(--ease);box-shadow:0 4px 16px rgba(225,29,72,.3);touch-action:manipulation}
+.login-btn{width:100%;padding:12px;background:linear-gradient(135deg,#1e3a8a,#2563EB);border:none;border-radius:var(--radius-sm);color:#fff;font-family:var(--ff-c);font-size:1rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .25s var(--ease);box-shadow:0 4px 16px rgba(37,99,235,.3);touch-action:manipulation}
 .login-btn:hover,.login-btn:focus-visible{background:linear-gradient(135deg,#2563EB,#1e3a8a);box-shadow:0 8px 28px rgba(225,29,72,.4);transform:translateY(-1px)}
 .login-btn:active{transform:translateY(0)}
 .login-divider{text-align:center;font-family:var(--ff-m);font-size:.66rem;color:var(--warm-gray2);letter-spacing:.1em;margin:.85rem 0;display:flex;align-items:center;gap:.65rem}
