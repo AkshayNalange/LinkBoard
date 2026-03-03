@@ -52,7 +52,7 @@ img{max-width:100%}
 ::-webkit-scrollbar-thumb{background:var(--blue3);border-radius:3px}
 
 /* ── HEADER ──────────────────────────────────────── */
-.header{position:sticky;top:0;z-index:300;background:rgba(253,251,245,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:2px solid var(--border);padding:0 1rem;box-shadow:var(--shadow-sm)}
+.header{position:sticky;top:0;z-index:300;background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:2px solid var(--border);padding:0 1rem;box-shadow:var(--shadow-sm)}
 .header::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--blue2),var(--blue3),var(--blue));background-size:200% 100%;animation:shimmer 4s linear infinite}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
