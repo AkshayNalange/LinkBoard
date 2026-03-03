@@ -10,35 +10,22 @@
 
 <!-- ═══════ ART DECO LOGIN ═══════ -->
 <div class="login-screen" id="loginScreen">
-  <!-- Animated rays bg -->
   <div class="login-rays"></div>
-
-  <!-- Floating geometric shapes -->
   <div class="login-geo g1"></div>
   <div class="login-geo g2"></div>
   <div class="login-geo g3"></div>
   <div class="login-geo g4"></div>
 
   <div class="login-box">
-    <!-- Animated header -->
     <div class="login-header-bar">
-      <!-- Compass rose animation -->
       <div class="compass">
-        <div class="compass-ring">
-          <!-- ticks -->
-          <div class="compass-tick" style="transform:rotate(0deg) translateX(-50%);margin-left:50%;top:4px;height:12px;background:rgba(255,255,255,.9)"></div>
-          <div class="compass-tick" style="transform:rotate(90deg) translateX(-50%);margin-left:50%;top:4px;height:8px"></div>
-          <div class="compass-tick" style="transform:rotate(180deg) translateX(-50%);margin-left:50%;top:4px;height:8px"></div>
-          <div class="compass-tick" style="transform:rotate(270deg) translateX(-50%);margin-left:50%;top:4px;height:8px"></div>
-        </div>
+        <div class="compass-ring"></div>
         <div class="compass-inner"></div>
         <div class="compass-dot"></div>
       </div>
       <div class="login-hdr-title">Admin Access</div>
       <div class="login-hdr-sub">LinkBoard Control Panel</div>
     </div>
-
-    <!-- Form -->
     <div class="login-form-area">
       <div class="login-field-wrap">
         <label class="login-field-label">Password</label>
@@ -54,7 +41,6 @@
 <!-- ═══════ ADMIN PANEL ═══════ -->
 <div class="wrap" id="adminWrap" style="display:none">
 
-  <!-- HEADER -->
   <header class="header">
     <div class="header-inner">
       <a href="index.html" class="logo">
@@ -66,56 +52,56 @@
       </a>
       <div class="header-right">
         <a href="index.html" class="hbtn">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           View Site
         </a>
         <button class="hbtn primary" id="logoutBtn">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Logout
         </button>
       </div>
     </div>
   </header>
 
-  <!-- ADMIN SHELL: sidebar + main -->
   <div class="admin-shell">
 
-    <!-- ── SIDEBAR ── -->
+    <!-- SIDEBAR -->
     <aside class="sidebar">
-      <div class="sb-section">
-        <div class="sb-lbl">Overview</div>
-        <div class="sb-stat">
-          <div class="sb-icon a">📄</div>
-          <div>
-            <div class="sb-val" id="sbPosts">—</div>
-            <div class="sb-lbl2">Total Posts</div>
-          </div>
-        </div>
-        <div class="sb-stat">
-          <div class="sb-icon b">🏷</div>
-          <div>
-            <div class="sb-val" id="sbCats">—</div>
-            <div class="sb-lbl2">Categories</div>
-          </div>
-        </div>
-        <div class="sb-stat">
-          <div class="sb-icon c">⚡</div>
-          <div>
-            <div class="sb-val" id="sbTags">—</div>
-            <div class="sb-lbl2">Unique Tags</div>
-          </div>
-        </div>
+      <!-- Mobile toggle -->
+      <div class="sidebar-toggle" id="sidebarToggle">
+        Dashboard Overview
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
 
-      <div class="sb-section">
-        <div class="sb-lbl">Browse by Category</div>
-        <div class="sb-cats" id="sbCatList">
-          <p style="font-size:.75rem;color:var(--warm-gray2);padding:4px 2px">No posts yet</p>
+      <div class="sidebar-content" id="sidebarContent">
+        <div class="sb-section" style="margin-top:.85rem">
+          <div class="sb-lbl">Overview</div>
+          <div class="sb-stats-row">
+            <div class="sb-stat">
+              <div class="sb-icon a">📄</div>
+              <div><div class="sb-val" id="sbPosts">—</div><div class="sb-lbl2">Posts</div></div>
+            </div>
+            <div class="sb-stat">
+              <div class="sb-icon b">🏷</div>
+              <div><div class="sb-val" id="sbCats">—</div><div class="sb-lbl2">Categories</div></div>
+            </div>
+            <div class="sb-stat">
+              <div class="sb-icon c">⚡</div>
+              <div><div class="sb-val" id="sbTags">—</div><div class="sb-lbl2">Tags</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sb-section">
+          <div class="sb-lbl">Browse by Category</div>
+          <div class="sb-cats" id="sbCatList">
+            <p style="font-size:.74rem;color:var(--warm-gray2);padding:4px 2px">No posts yet</p>
+          </div>
         </div>
       </div>
     </aside>
 
-    <!-- ── MAIN ── -->
+    <!-- MAIN -->
     <main class="admin-main">
 
       <!-- CREATE FORM -->
@@ -130,7 +116,7 @@
 
             <div class="fg full">
               <label class="fg-label">Title <span class="req">*</span></label>
-              <input class="fg-input" id="fTitle" type="text" placeholder="Post title…"/>
+              <input class="fg-input" id="fTitle" type="text" placeholder="Post title…" autocomplete="off"/>
             </div>
 
             <div class="fg full">
@@ -140,37 +126,33 @@
 
             <div class="fg full">
               <label class="fg-label">URL / Link <span class="req">*</span></label>
-              <input class="fg-input" id="fUrl" type="url" placeholder="https://…"/>
+              <input class="fg-input" id="fUrl" type="url" placeholder="https://…" autocomplete="off" inputmode="url"/>
             </div>
 
-            <!-- MULTI-SELECT CATEGORY -->
+            <!-- Multi-select categories -->
             <div class="fg">
               <label class="fg-label">Categories <span class="req">*</span></label>
               <div class="multi-select-wrap" id="catWrap">
                 <div class="multi-select-trigger" id="catTrigger">
-                  <span class="ms-placeholder" id="catPlaceholder">Select categories…</span>
+                  <span class="ms-placeholder">Select categories…</span>
                   <svg class="ms-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 </div>
-                <div class="ms-dropdown" id="catDropdown">
-                  <!-- populated by JS -->
-                </div>
+                <div class="ms-dropdown" id="catDropdown"></div>
               </div>
             </div>
 
-            <!-- PREDEFINED TAGS -->
+            <!-- Predefined 30 tags -->
             <div class="fg">
-              <label class="fg-label">Tags <span style="color:var(--warm-gray2);font-weight:400">(select all that apply)</span></label>
+              <label class="fg-label">Tags <span style="color:var(--warm-gray2);font-weight:400;text-transform:none;letter-spacing:0">(check all that apply)</span></label>
               <div class="tags-grid-wrap">
-                <div class="tags-grid" id="tagsGrid">
-                  <!-- populated by JS -->
-                </div>
+                <div class="tags-grid" id="tagsGrid"></div>
               </div>
             </div>
 
-          </div><!-- /form-grid -->
+          </div>
 
           <button class="btn-pub" id="submitBtn">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Publish Post
           </button>
         </div>
@@ -188,8 +170,8 @@
       </div>
 
     </main>
-  </div><!-- /admin-shell -->
-</div><!-- /wrap -->
+  </div>
+</div>
 
 <div class="toast" id="toast">
   <span class="ti" id="toastIcon">●</span>

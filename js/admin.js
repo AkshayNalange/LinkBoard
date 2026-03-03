@@ -3,14 +3,12 @@ const API = "/api";
 const SK  = "lb_key";
 let adminKey = "", all = [];
 
-// ── PREDEFINED CATEGORIES ─────────────────────────────
 const CATEGORIES = [
   "Tutorial","Documentation","Article","Video","Course",
   "Tool","Reference","Research","News","Case Study",
   "Cheat Sheet","Book","Podcast","Blog Post","GitHub Repo"
 ];
 
-// ── PREDEFINED 30 TAGS ────────────────────────────────
 const PRESET_TAGS = [
   "JavaScript","TypeScript","Python","React","Vue.js",
   "Node.js","CSS","HTML","REST API","GraphQL",
@@ -20,10 +18,9 @@ const PRESET_TAGS = [
   "Frontend","Microservices","Open Source","Authentication","Networking"
 ];
 
-// ── MULTI SELECT STATE ────────────────────────────────
 let selectedCats = [];
 
-// ── DOM REFS ──────────────────────────────────────────
+// ── DOM REFS ──────────────────────────────────────
 const loginScreen = document.getElementById("loginScreen");
 const adminWrap   = document.getElementById("adminWrap");
 const loginInput  = document.getElementById("loginInput");
@@ -33,9 +30,8 @@ const submitBtn   = document.getElementById("submitBtn");
 const feed        = document.getElementById("feed");
 const catTrigger  = document.getElementById("catTrigger");
 const catDropdown = document.getElementById("catDropdown");
-const catPlaceholder = document.getElementById("catPlaceholder");
 
-// ── INIT ──────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────
 (function() {
   const saved = sessionStorage.getItem(SK);
   if (saved) { adminKey = saved; showAdmin(); }
@@ -48,18 +44,26 @@ const catPlaceholder = document.getElementById("catPlaceholder");
   buildCatDropdown();
   buildTagsGrid();
 
-  // Close dropdown on outside click
+  // Close category dropdown on outside click
   document.addEventListener("click", e => {
-    if (!document.getElementById("catWrap")?.contains(e.target)) {
-      closeCatDropdown();
-    }
+    const wrap = document.getElementById("catWrap");
+    if (wrap && !wrap.contains(e.target)) closeCatDropdown();
   });
 
-  // Toggle dropdown
   catTrigger.addEventListener("click", toggleCatDropdown);
+
+  // Mobile sidebar toggle
+  const toggle = document.getElementById("sidebarToggle");
+  const content = document.getElementById("sidebarContent");
+  if (toggle && content) {
+    toggle.addEventListener("click", () => {
+      const isOpen = content.classList.toggle("open");
+      toggle.classList.toggle("open", isOpen);
+    });
+  }
 })();
 
-// ── AUTH ──────────────────────────────────────────────
+// ── AUTH ──────────────────────────────────────────
 async function tryLogin() {
   const pw = loginInput.value.trim();
   if (!pw) { loginErr.textContent = "Please enter a password."; return; }
@@ -103,13 +107,19 @@ function logout() {
   loginErr.textContent = "";
 }
 
-// ── LOAD POSTS ────────────────────────────────────────
+// ── LOAD POSTS ────────────────────────────────────
 async function loadPosts() {
   try {
     const res  = await fetch(`${API}/posts`);
     const data = await res.json();
     all = data.posts || [];
-    const cats = [...new Set(all.map(p => p.category).filter(Boolean))];
+
+    // Parse categories (can be comma-separated)
+    const catSet = new Set();
+    all.forEach(p => {
+      if (p.category) p.category.split(",").map(c => c.trim()).filter(Boolean).forEach(c => catSet.add(c));
+    });
+    const cats = [...catSet].sort();
     const tags = new Set(all.flatMap(p => p.tags || []));
 
     setEl("sbPosts", all.length);
@@ -117,24 +127,31 @@ async function loadPosts() {
     setEl("sbTags",  tags.size);
     setEl("feedCount", `${all.length} post${all.length !== 1 ? "s" : ""}`);
 
-    // Sidebar cat list
     const sbCatList = document.getElementById("sbCatList");
-    sbCatList.innerHTML = cats.sort().map(c =>
-      `<button class="sb-cat" onclick="filterFeed('${esc(c)}')">${esc(c)}</button>`
-    ).join("") || `<p style="font-size:.75rem;color:var(--warm-gray2);padding:4px 2px">No categories yet</p>`;
+    if (sbCatList) {
+      sbCatList.innerHTML = cats.map(c =>
+        `<button class="sb-cat" onclick="filterFeed('${esc(c)}')">${esc(c)}</button>`
+      ).join("") || `<p style="font-size:.74rem;color:var(--warm-gray2);padding:4px 2px">No categories yet</p>`;
+    }
 
     renderFeed(all);
   } catch (e) {
-    feed.innerHTML = `<p style="color:var(--red);font-size:.85rem;padding:1rem">Failed to load: ${e.message}</p>`;
+    if (feed) feed.innerHTML = `<p style="color:var(--red);font-size:.85rem;padding:1rem">Failed to load: ${esc(e.message)}</p>`;
   }
 }
 
-window.filterFeed = cat => renderFeed(cat ? all.filter(p => p.category === cat || (p.tags||[]).includes(cat)) : all);
+window.filterFeed = cat => {
+  if (!cat) { renderFeed(all); return; }
+  renderFeed(all.filter(p => {
+    const cats = (p.category || "").split(",").map(c => c.trim());
+    return cats.includes(cat) || (p.tags || []).includes(cat);
+  }));
+};
 
-// ── RENDER FEED (Facebook-style) ──────────────────────
+// ── RENDER FEED ───────────────────────────────────
 function renderFeed(posts) {
   if (!posts.length) {
-    feed.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--warm-gray)"><p style="font-family:var(--ff-d);font-size:1.2rem;font-style:italic">No posts yet</p><p style="font-size:.83rem;margin-top:.4rem">Create your first post above!</p></div>`;
+    feed.innerHTML = `<div style="text-align:center;padding:2.5rem;color:var(--warm-gray)"><p style="font-family:var(--ff-d);font-size:1.15rem;font-style:italic">No posts yet</p><p style="font-size:.82rem;margin-top:.4rem">Publish your first post above!</p></div>`;
     return;
   }
   feed.innerHTML = posts.map((p, i) => `
@@ -142,34 +159,31 @@ function renderFeed(posts) {
       <div class="post-card-header">
         <div class="pc-avatar">${esc(p.title.charAt(0).toUpperCase())}</div>
         <div class="pc-meta">
-          <div class="pc-author">
-            Space Pirate
-            <span class="pc-badge">Admin</span>
-          </div>
+          <div class="pc-author">Space Pirate <span class="pc-badge">Admin</span></div>
           <div class="pc-time">${fmt(p.createdAt)}</div>
         </div>
-        <span class="pc-cat">${esc(p.category)}</span>
+        <span class="pc-cat">${esc(p.category.split(",")[0].trim())}</span>
       </div>
       <div class="post-card-body">
         <div class="pc-title">${esc(p.title)}</div>
         ${p.description ? `<div class="pc-desc">${esc(p.description)}</div>` : ""}
         <span class="pc-url">${esc(p.url)}</span>
-        ${p.tags?.length ? `<div class="pc-tags">${p.tags.map(t=>`<span class="pc-tag">${esc(t)}</span>`).join("")}</div>` : ""}
+        ${p.tags && p.tags.length ? `<div class="pc-tags">${p.tags.map(t => `<span class="pc-tag">${esc(t)}</span>`).join("")}</div>` : ""}
       </div>
       <div class="post-card-footer">
-        <a href="${esc(p.url)}" target="_blank" rel="noopener" class="btn-preview-link">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-          Open Link
+        <a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer" class="btn-preview-link">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          Open
         </a>
+        <span class="pc-likes">🔥 ${p.likes || 0}</span>
         <button class="btn-del" onclick="delPost('${esc(p.id)}')">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
           Delete
         </button>
       </div>
     </div>`).join("");
 }
 
-// ── MULTI-SELECT CATEGORY DROPDOWN ───────────────────
+// ── CATEGORY MULTI-SELECT ─────────────────────────
 function buildCatDropdown() {
   catDropdown.innerHTML = CATEGORIES.map(c => `
     <div class="ms-option" data-cat="${esc(c)}" onclick="toggleCat('${esc(c)}')">
@@ -179,8 +193,8 @@ function buildCatDropdown() {
 }
 
 function toggleCatDropdown() {
-  const open = catDropdown.classList.toggle("open");
-  catTrigger.classList.toggle("open", open);
+  const isOpen = catDropdown.classList.toggle("open");
+  catTrigger.classList.toggle("open", isOpen);
 }
 
 function closeCatDropdown() {
@@ -189,18 +203,16 @@ function closeCatDropdown() {
 }
 
 window.toggleCat = function(cat) {
-  if (selectedCats.includes(cat)) {
-    selectedCats = selectedCats.filter(c => c !== cat);
-  } else {
-    selectedCats.push(cat);
-  }
+  selectedCats = selectedCats.includes(cat)
+    ? selectedCats.filter(c => c !== cat)
+    : [...selectedCats, cat];
   updateCatUI();
 };
 
 function updateCatUI() {
-  // Update chips in trigger
+  // Rebuild trigger content
   catTrigger.innerHTML = "";
-  if (selectedCats.length === 0) {
+  if (!selectedCats.length) {
     catTrigger.innerHTML = `<span class="ms-placeholder">Select categories…</span>`;
   } else {
     selectedCats.forEach(c => {
@@ -212,31 +224,32 @@ function updateCatUI() {
   }
   catTrigger.innerHTML += `<svg class="ms-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`;
 
-  // Update dropdown selected states
   catDropdown.querySelectorAll(".ms-option").forEach(opt => {
-    const cat = opt.dataset.cat;
-    opt.classList.toggle("selected", selectedCats.includes(cat));
+    opt.classList.toggle("selected", selectedCats.includes(opt.dataset.cat));
   });
 }
 
-// ── TAGS GRID (30 predefined) ─────────────────────────
+// ── TAGS GRID ─────────────────────────────────────
 function buildTagsGrid() {
-  const grid = document.getElementById("tagsGrid");
-  grid.innerHTML = PRESET_TAGS.map(tag => `
+  const tagsGrid = document.getElementById("tagsGrid");
+  if (!tagsGrid) return;
+  tagsGrid.innerHTML = PRESET_TAGS.map(tag => {
+    const safeId = "tag_" + tag.replace(/[^a-zA-Z0-9]/g, "_");
+    return `
     <div>
-      <input type="checkbox" class="tag-checkbox" id="tag_${tag.replace(/[^a-zA-Z0-9]/g,'_')}" value="${esc(tag)}"/>
-      <label class="tag-label" for="tag_${tag.replace(/[^a-zA-Z0-9]/g,'_')}">
-        <span class="tag-check-icon">✓</span>
-        ${esc(tag)}
+      <input type="checkbox" class="tag-checkbox" id="${safeId}" value="${esc(tag)}"/>
+      <label class="tag-label" for="${safeId}">
+        <span class="tag-check-icon">✓</span>${esc(tag)}
       </label>
-    </div>`).join("");
+    </div>`;
+  }).join("");
 }
 
 function getSelectedTags() {
   return [...document.querySelectorAll(".tag-checkbox:checked")].map(cb => cb.value);
 }
 
-// ── SUBMIT ────────────────────────────────────────────
+// ── SUBMIT ────────────────────────────────────────
 async function handleSubmit() {
   const title = document.getElementById("fTitle").value.trim();
   const desc  = document.getElementById("fDesc").value.trim();
@@ -245,11 +258,11 @@ async function handleSubmit() {
 
   if (!title) { toast("Title is required.", "error"); return; }
   if (!url)   { toast("URL is required.", "error"); return; }
-  if (selectedCats.length === 0) { toast("Please select at least one category.", "error"); return; }
+  if (!selectedCats.length) { toast("Please select at least one category.", "error"); return; }
 
-  try { new URL(url); } catch { toast("Please enter a valid URL (include https://).", "error"); return; }
+  try { new URL(url); }
+  catch { toast("Please enter a valid URL (include https://).", "error"); return; }
 
-  // Join multiple categories with comma for storage (use first for primary)
   const category = selectedCats.join(", ");
 
   submitBtn.disabled = true;
@@ -261,8 +274,11 @@ async function handleSubmit() {
       headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
       body: JSON.stringify({ title, description: desc, url, category, tags })
     });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error || "Failed to publish"); }
-    toast("Post published successfully!", "success");
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to publish");
+    }
+    toast("Post published successfully! 🎉", "success");
     resetForm();
     await loadPosts();
   } catch (e) {
@@ -283,8 +299,8 @@ function resetForm() {
   document.querySelectorAll(".tag-checkbox").forEach(cb => cb.checked = false);
 }
 
-// ── DELETE ────────────────────────────────────────────
-window.delPost = async id => {
+// ── DELETE ────────────────────────────────────────
+window.delPost = async function(id) {
   if (!confirm("Delete this post? This cannot be undone.")) return;
   try {
     const res = await fetch(`${API}/post`, {
@@ -300,7 +316,7 @@ window.delPost = async id => {
   }
 };
 
-// ── HELPERS ───────────────────────────────────────────
+// ── HELPERS ───────────────────────────────────────
 function fmt(iso) {
   if (!iso) return "";
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -318,6 +334,7 @@ function setEl(id, v) {
 
 function toast(msg, type = "info") {
   const el = document.getElementById("toast");
+  if (!el) return;
   document.getElementById("toastMsg").textContent = msg;
   document.getElementById("toastIcon").textContent = { success: "✓", error: "✕", info: "●" }[type] || "●";
   el.className = `toast ${type}`;
