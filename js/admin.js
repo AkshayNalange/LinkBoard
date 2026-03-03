@@ -55,7 +55,14 @@ const PRESET_TAGS = [
   "Entry Level", "Mid Level", "Senior Level", "Lead", "Manager",
   "Resume Tips", "Cover Letter", "Interview Prep", "Salary Guide", "Job Board",
   "LinkedIn", "Naukri", "Indeed", "Glassdoor", "AngelList",
-  "Startup Job", "MNC", "Government Job", "Work From Home", "Visa Sponsored"
+  "Startup Job", "MNC", "Government Job", "Work From Home", "Visa Sponsored",
+
+  // 😂 Funny Job Tags
+  "Works On My Machine", "Meeting Could've Been Email", "Underpaid & Overworked",
+  "Fake It Till You Make It", "Imposter Syndrome", "Quietly Quitting",
+  "Copy Pasted From StackOverflow", "Todo: Update Resume", "Office Politics",
+  "Open To Work (Desperately)", "3 Yrs Exp For Junior Role", "LinkedIn Influencer",
+  "My Manager Has No Idea", "Promoted To Customer", "Bug Free (I Hope)"
 ];
 
 let selectedCats = [];
@@ -74,32 +81,36 @@ const cancelEditBtn = document.getElementById("cancelEditBtn");
 
 // ── INIT ──────────────────────────────────────────
 (function() {
-  const saved = sessionStorage.getItem(SK);
-  if (saved) { adminKey = saved; showAdmin(); }
+  try {
+    const saved = sessionStorage.getItem(SK);
+    if (saved) { adminKey = saved; showAdmin(); }
 
-  loginBtn.addEventListener("click", tryLogin);
-  loginInput.addEventListener("keydown", e => e.key === "Enter" && tryLogin());
-  document.getElementById("logoutBtn").addEventListener("click", logout);
-  submitBtn.addEventListener("click", handleSubmit);
-  cancelEditBtn.addEventListener("click", cancelEdit);
+    loginBtn.addEventListener("click", tryLogin);
+    loginInput.addEventListener("keydown", e => e.key === "Enter" && tryLogin());
+    document.getElementById("logoutBtn").addEventListener("click", logout);
+    submitBtn.addEventListener("click", handleSubmit);
+    cancelEditBtn.addEventListener("click", cancelEdit);
 
-  buildCatDropdown();
-  buildTagsGrid();
+    buildCatDropdown();
+    buildTagsGrid();
 
-  document.addEventListener("click", e => {
-    const wrap = document.getElementById("catWrap");
-    if (wrap && !wrap.contains(e.target)) closeCatDropdown();
-  });
-
-  catTrigger.addEventListener("click", toggleCatDropdown);
-
-  const toggle = document.getElementById("sidebarToggle");
-  const content = document.getElementById("sidebarContent");
-  if (toggle && content) {
-    toggle.addEventListener("click", () => {
-      const isOpen = content.classList.toggle("open");
-      toggle.classList.toggle("open", isOpen);
+    document.addEventListener("click", e => {
+      const wrap = document.getElementById("catWrap");
+      if (wrap && !wrap.contains(e.target)) closeCatDropdown();
     });
+
+    catTrigger.addEventListener("click", toggleCatDropdown);
+
+    const toggle = document.getElementById("sidebarToggle");
+    const content = document.getElementById("sidebarContent");
+    if (toggle && content) {
+      toggle.addEventListener("click", () => {
+        const isOpen = content.classList.toggle("open");
+        toggle.classList.toggle("open", isOpen);
+      });
+    }
+  } catch(e) {
+    console.error("Admin init error:", e);
   }
 })();
 
@@ -208,13 +219,19 @@ function renderFeed(posts) {
         <div class="pc-title">${esc(p.title)}</div>
         ${p.description ? `<div class="pc-desc">${esc(p.description)}</div>` : ""}
         <span class="pc-url">${esc(p.url)}</span>
+        ${p.links && p.links.length > 1 ? `<div class="pc-extra-links">${p.links.slice(1).map(l => `<span class="pc-url-extra">↳ <a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.label || l.url)}</a></span>`).join("")}</div>` : ""}
         ${p.tags && p.tags.length ? `<div class="pc-tags">${p.tags.map(t => `<span class="pc-tag">${esc(t)}</span>`).join("")}</div>` : ""}
       </div>
       <div class="post-card-footer">
-        <a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer" class="btn-preview-link">
+        ${p.links && p.links.length
+          ? p.links.map(l => `<a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer" class="btn-preview-link">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          ${esc(l.label || "Open")}
+        </a>`).join("")
+          : `<a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer" class="btn-preview-link">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
           Open
-        </a>
+        </a>`}
         <span class="pc-likes">🔥 ${p.likes || 0}</span>
         <button class="btn-edit" onclick="editPost('${esc(p.id)}')">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -273,7 +290,74 @@ function updateCatUI() {
   });
 }
 
-// ── TAGS GRID ─────────────────────────────────────
+// ── LINK ROWS ─────────────────────────────────────
+window.addLinkRow = function() {
+  const container = document.getElementById("linksContainer");
+  const rows = container.querySelectorAll(".link-row");
+  const idx = rows.length;
+  const div = document.createElement("div");
+  div.className = "link-row";
+  div.dataset.index = idx;
+  div.innerHTML = `
+    <div class="link-row-fields">
+      <input class="fg-input link-label-input" type="text" placeholder="Label (e.g. GitHub, PDF…)" autocomplete="off"/>
+      <input class="fg-input link-url-input" type="url" placeholder="https://…" autocomplete="off" inputmode="url"/>
+    </div>
+    <button class="btn-remove-link" onclick="removeLinkRow(this)" title="Remove">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>`;
+  container.appendChild(div);
+  // Show remove buttons when more than 1 row
+  updateRemoveBtns();
+  div.querySelector(".link-url-input").focus();
+};
+
+window.removeLinkRow = function(btn) {
+  btn.closest(".link-row").remove();
+  updateRemoveBtns();
+};
+
+function updateRemoveBtns() {
+  const rows = document.querySelectorAll("#linksContainer .link-row");
+  rows.forEach(r => {
+    const btn = r.querySelector(".btn-remove-link");
+    if (btn) btn.style.display = rows.length > 1 ? "flex" : "none";
+  });
+}
+
+function getLinks() {
+  const rows = document.querySelectorAll("#linksContainer .link-row");
+  const links = [];
+  rows.forEach(row => {
+    const label = row.querySelector(".link-label-input").value.trim();
+    const url   = row.querySelector(".link-url-input").value.trim();
+    if (url) links.push({ label: label || "Link", url });
+  });
+  return links;
+}
+
+function setLinks(links) {
+  const container = document.getElementById("linksContainer");
+  container.innerHTML = "";
+  const arr = (links && links.length) ? links : [{ label: "", url: "" }];
+  arr.forEach((l, i) => {
+    const div = document.createElement("div");
+    div.className = "link-row";
+    div.dataset.index = i;
+    div.innerHTML = `
+      <div class="link-row-fields">
+        <input class="fg-input link-label-input" type="text" placeholder="Label (e.g. Main Site, GitHub, PDF…)" autocomplete="off" value="${esc(l.label || '')}"/>
+        <input class="fg-input link-url-input" type="url" placeholder="https://…" autocomplete="off" inputmode="url" value="${esc(l.url || '')}"/>
+      </div>
+      <button class="btn-remove-link" onclick="removeLinkRow(this)" title="Remove" style="display:none">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>`;
+    container.appendChild(div);
+  });
+  updateRemoveBtns();
+}
+
+
 function buildTagsGrid() {
   const tagsGrid = document.getElementById("tagsGrid");
   if (!tagsGrid) return;
@@ -303,7 +387,9 @@ window.editPost = function(id) {
   // Fill form fields
   document.getElementById("fTitle").value = post.title || "";
   document.getElementById("fDesc").value  = post.description || "";
-  document.getElementById("fUrl").value   = post.url || "";
+  // Fill links
+  const links = post.links && post.links.length ? post.links : [{ label: "", url: post.url || "" }];
+  setLinks(links);
 
   // Set categories
   selectedCats = post.category ? post.category.split(",").map(c => c.trim()).filter(Boolean) : [];
@@ -344,17 +430,20 @@ function cancelEdit() {
 async function handleSubmit() {
   const title = document.getElementById("fTitle").value.trim();
   const desc  = document.getElementById("fDesc").value.trim();
-  const url   = document.getElementById("fUrl").value.trim();
   const tags  = getSelectedTags();
+  const links = getLinks();
 
   if (!title) { toast("Title is required.", "error"); return; }
-  if (!url)   { toast("URL is required.", "error"); return; }
+  if (!links.length) { toast("At least one URL is required.", "error"); return; }
   if (!selectedCats.length) { toast("Please select at least one category.", "error"); return; }
 
-  try { new URL(url); }
-  catch { toast("Please enter a valid URL (include https://).", "error"); return; }
+  for (const l of links) {
+    try { new URL(l.url); }
+    catch { toast(`Invalid URL: "${l.url}" — include https://`, "error"); return; }
+  }
 
   const category = selectedCats.join(", ");
+  const url = links[0].url; // primary URL for backwards compat
   const isEditing = !!editingId;
 
   submitBtn.disabled = true;
@@ -362,7 +451,6 @@ async function handleSubmit() {
 
   try {
     if (isEditing) {
-      // Delete old post then create new one with same data (preserves likes)
       await fetch(`${API}/post`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
@@ -373,7 +461,7 @@ async function handleSubmit() {
     const res = await fetch(`${API}/post`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
-      body: JSON.stringify({ title, description: desc, url, category, tags })
+      body: JSON.stringify({ title, description: desc, url, links, category, tags })
     });
     if (!res.ok) {
       const err = await res.json();
@@ -387,14 +475,18 @@ async function handleSubmit() {
     toast(e.message, "error");
   } finally {
     submitBtn.disabled = false;
-    document.getElementById("submitLabel").textContent = editingId ? "Save Changes" : (isEditing ? "Save Changes" : "Publish Post");
+    if (editingId) {
+      document.getElementById("submitLabel").textContent = "Save Changes";
+    } else {
+      document.getElementById("submitLabel").textContent = "Publish Post";
+    }
   }
 }
 
 function resetForm() {
   document.getElementById("fTitle").value = "";
   document.getElementById("fDesc").value  = "";
-  document.getElementById("fUrl").value   = "";
+  setLinks([{ label: "", url: "" }]);
   selectedCats = [];
   updateCatUI();
   closeCatDropdown();
