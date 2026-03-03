@@ -1,378 +1,445 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=Fira+Code:wght@400;500&display=swap');
+/* admin.js — admin panel */
+const API = "/api";
+const SK  = "lb_key";
+let adminKey = "", all = [], editingId = null;
 
-/* ══════════════════════════════════════════════════
-   VARIABLES
-══════════════════════════════════════════════════ */
-:root {
-  --cream:      #FFFFFF;
-  --cream2:     #F8FAFC;
-  --cream3:     #F8FAFC;
-  --parchment:  #FFFFFF;
-  --white:      #FFFFFF;
-  --blue:       #2563EB;
-  --blue2:      #3B82F6;
-  --blue3:      #93C5FD;
-  --blue-lt:    #DBEAFE;
-  --blue-bg:    #FFFFFF;
-  --red:        #E11D48;
-  --red2:       #FB7185;
-  --red-lt:     #FFF1F2;
-  --brown:      #1E293B;
-  --brown2:     #334155;
-  --warm-gray:  #64748B;
-  --warm-gray2: #94A3B8;
-  --warm-gray3: #CBD5E1;
-  --border:     #E2D8C4;
-  --border2:    #CBD5E1;
-  --shadow-sm:  0 1px 4px rgba(44,26,14,.08);
-  --shadow:     0 4px 16px rgba(44,26,14,.10);
-  --shadow-lg:  0 12px 40px rgba(44,26,14,.14);
-  --shadow-xl:  0 24px 64px rgba(44,26,14,.18);
-  --radius:     14px;
-  --radius-sm:  8px;
-  --radius-xs:  5px;
-  --ff-d: 'Cormorant Garamond', Georgia, serif;
-  --ff-b: 'Barlow', sans-serif;
-  --ff-c: 'Barlow Condensed', sans-serif;
-  --ff-m: 'Fira Code', monospace;
-  --ease: cubic-bezier(0.16,1,0.3,1);
+const CATEGORIES = [
+  "Tutorial","Documentation","Article","Video","Course",
+  "Tool","Reference","Research","News","Case Study",
+  "Cheat Sheet","Book","Podcast","Blog Post","GitHub Repo",
+  "Job Posting","Resume & CV","Interview","Career Advice","Internship",
+  "Freelance","Remote Work","Salary & Compensation","Company Review","Networking"
+];
+
+const PRESET_TAGS = [
+  // Knowledge & Learning
+  "Tutorial", "Cheat Sheet", "Research Paper", "Case Study", "Book Summary",
+  "Course Notes", "Best Practices", "Documentation", "Interview Prep", "How-To Guide",
+  "Deep Dive", "Beginner Friendly", "Advanced", "Quick Read", "Must Read",
+
+  // Tech (Generic)
+  "AI/ML", "Web Dev", "Mobile App", "DevOps", "Cloud",
+  "Cybersecurity", "Open Source", "Software", "Tool", "Free Tool",
+  "Productivity App", "Browser Extension", "API", "Database", "UI/UX",
+
+  // Software & Services
+  "Free", "Freemium", "Paid", "Subscription", "One-Time Purchase",
+  "SaaS", "Self-Hosted", "No-Code", "Low-Code", "Open Access",
+
+  // News & Updates
+  "News", "Breaking", "Tech Trends", "Industry Report", "Product Launch",
+  "Version Release", "Changelog", "Analysis", "Opinion", "Weekly Digest",
+
+  // Entertainment
+  "Movies", "TV Series", "Drama", "Anime", "Documentary",
+  "Streaming", "Netflix", "YouTube", "Podcast", "Short Film",
+  "Web Series", "Reality TV", "Comedy", "Thriller", "Sci-Fi",
+
+  // Gen Z & Social
+  "#viral", "#trending", "#mustsee", "#hidden gem", "#underrated",
+  "#overrated", "#ngl", "#lowkey", "#based", "#no cap",
+  "#slaps", "#goated", "#fomo", "#vibe check", "#main character",
+
+  // General Interest
+  "Health", "Finance", "Career", "Self Improvement", "Psychology",
+  "Science", "History", "Philosophy", "Design", "Art",
+  "Gaming", "Fitness", "Food", "Travel", "Environment",
+
+  // Resource Type
+  "PDF", "Video", "Article", "Newsletter", "Infographic",
+  "Template", "Dataset", "Repo", "Blog Post", "Whitepaper",
+
+  // Jobs & Career
+  "Job Alert", "Hiring Now", "Remote Job", "Hybrid", "On-Site",
+  "Full-Time", "Part-Time", "Internship", "Freelance", "Contract",
+  "Entry Level", "Mid Level", "Senior Level", "Lead", "Manager",
+  "Resume Tips", "Cover Letter", "Interview Prep", "Salary Guide", "Job Board",
+  "LinkedIn", "Naukri", "Indeed", "Glassdoor", "AngelList",
+  "Startup Job", "MNC", "Government Job", "Work From Home", "Visa Sponsored"
+];
+
+let selectedCats = [];
+
+// ── DOM REFS ──────────────────────────────────────
+const loginScreen = document.getElementById("loginScreen");
+const adminWrap   = document.getElementById("adminWrap");
+const loginInput  = document.getElementById("loginInput");
+const loginBtn    = document.getElementById("loginBtn");
+const loginErr    = document.getElementById("loginErr");
+const submitBtn   = document.getElementById("submitBtn");
+const feed        = document.getElementById("feed");
+const catTrigger  = document.getElementById("catTrigger");
+const catDropdown = document.getElementById("catDropdown");
+const cancelEditBtn = document.getElementById("cancelEditBtn");
+
+// ── INIT ──────────────────────────────────────────
+(function() {
+  const saved = sessionStorage.getItem(SK);
+  if (saved) { adminKey = saved; showAdmin(); }
+
+  loginBtn.addEventListener("click", tryLogin);
+  loginInput.addEventListener("keydown", e => e.key === "Enter" && tryLogin());
+  document.getElementById("logoutBtn").addEventListener("click", logout);
+  submitBtn.addEventListener("click", handleSubmit);
+  cancelEditBtn.addEventListener("click", cancelEdit);
+
+  buildCatDropdown();
+  buildTagsGrid();
+
+  document.addEventListener("click", e => {
+    const wrap = document.getElementById("catWrap");
+    if (wrap && !wrap.contains(e.target)) closeCatDropdown();
+  });
+
+  catTrigger.addEventListener("click", toggleCatDropdown);
+
+  const toggle = document.getElementById("sidebarToggle");
+  const content = document.getElementById("sidebarContent");
+  if (toggle && content) {
+    toggle.addEventListener("click", () => {
+      const isOpen = content.classList.toggle("open");
+      toggle.classList.toggle("open", isOpen);
+    });
+  }
+})();
+
+// ── AUTH ──────────────────────────────────────────
+async function tryLogin() {
+  const pw = loginInput.value.trim();
+  if (!pw) { loginErr.textContent = "Please enter a password."; return; }
+  loginBtn.disabled = true;
+  loginBtn.textContent = "Verifying…";
+  loginErr.textContent = "";
+  try {
+    const res = await fetch(`${API}/post`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", "x-admin-key": pw },
+      body: JSON.stringify({ id: "__verify__" })
+    });
+    if (res.status === 401) {
+      loginErr.textContent = "Invalid password. Try again.";
+      loginInput.value = "";
+    } else {
+      adminKey = pw;
+      sessionStorage.setItem(SK, pw);
+      showAdmin();
+    }
+  } catch {
+    loginErr.textContent = "Connection error. Check your setup.";
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = "Enter Dashboard →";
+  }
 }
 
-/* ── RESET ───────────────────────────────────────── */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{background:var(--cream);color:var(--brown);font-family:var(--ff-b);min-height:100vh;overflow-x:hidden;line-height:1.6}
-body::before{content:'';position:fixed;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(37,99,235,.035) 40px);pointer-events:none;z-index:0}
-a{color:var(--red);text-decoration:none}
-a:hover{color:var(--red2)}
-img{max-width:100%}
-
-::-webkit-scrollbar{width:5px}
-::-webkit-scrollbar-track{background:var(--cream2)}
-::-webkit-scrollbar-thumb{background:var(--blue3);border-radius:3px}
-
-/* ── HEADER ──────────────────────────────────────── */
-.header{position:sticky;top:0;z-index:300;background:rgba(255,255,255,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:2px solid var(--border);padding:0 1rem;box-shadow:var(--shadow-sm)}
-.header::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--blue2),var(--blue3),var(--blue));background-size:200% 100%;animation:shimmer 4s linear infinite}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-
-.header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;gap:.75rem}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none;min-width:0}
-.logo-emblem{width:36px;height:36px;background:linear-gradient(135deg,#1e3a8a 0%,var(--blue) 100%);border-radius:9px;display:flex;align-items:center;justify-content:center;color:white;font-family:var(--ff-d);font-size:.9rem;font-weight:700;box-shadow:0 2px 8px rgba(225,29,72,.3);flex-shrink:0}
-.logo-text{display:flex;flex-direction:column;line-height:1;min-width:0}
-.logo-name{font-family:var(--ff-d);font-size:1.2rem;font-weight:700;color:var(--brown);letter-spacing:-.02em;white-space:nowrap}
-.logo-name span{color:var(--red)}
-.logo-sub{font-family:var(--ff-m);font-size:.52rem;color:var(--warm-gray);letter-spacing:.12em;text-transform:uppercase;margin-top:1px;display:none}
-@media(min-width:480px){.logo-sub{display:block}}
-
-.header-right{display:flex;align-items:center;gap:.4rem;flex-shrink:0}
-.hbtn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:999px;font-family:var(--ff-b);font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border2);background:transparent;color:var(--warm-gray);text-decoration:none;transition:all .25s var(--ease);white-space:nowrap}
-.hbtn:hover{border-color:var(--blue);color:var(--brown);background:var(--blue-bg)}
-.hbtn.primary{background:var(--red);border-color:var(--red);color:#fff}
-.hbtn.primary:hover{background:var(--red2);border-color:var(--red2);box-shadow:0 4px 16px rgba(225,29,72,.3);color:#fff}
-
-/* ── TOPBAR ───────────────────────────────────────── */
-.topbar{max-width:1400px;margin:0 auto;padding:1.25rem 1rem 0;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;position:relative;z-index:1}
-.topstats{display:flex;gap:.5rem;flex-wrap:wrap}
-.tstat{display:flex;align-items:center;gap:7px;padding:6px 12px;background:var(--white);border:1.5px solid var(--border);border-radius:999px;box-shadow:var(--shadow-sm)}
-.tstat-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);box-shadow:0 0 5px var(--blue2);animation:glow-pulse 2s ease-in-out infinite;flex-shrink:0}
-.tstat:nth-child(2) .tstat-dot{background:var(--red);box-shadow:0 0 5px var(--red2);animation-delay:.4s}
-.tstat:nth-child(3) .tstat-dot{background:var(--blue2);box-shadow:0 0 5px var(--blue3);animation-delay:.8s}
-@keyframes glow-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.65)}}
-.tstat-v{font-family:var(--ff-m);font-size:.78rem;font-weight:500;color:var(--brown)}
-.tstat-l{font-size:.7rem;color:var(--warm-gray)}
-
-.search-wrap{position:relative;width:100%}
-@media(min-width:600px){.search-wrap{flex:1;max-width:360px}}
-.search-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--warm-gray2);pointer-events:none}
-.search-input{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:999px;padding:9px 16px 9px 38px;color:var(--brown);font-family:var(--ff-b);font-size:.88rem;outline:none;transition:all .25s var(--ease);box-shadow:var(--shadow-sm)}
-.search-input::placeholder{color:var(--warm-gray2)}
-.search-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
-
-/* ── FILTER BAR ───────────────────────────────────── */
-.filterbar{max-width:1400px;margin:0 auto;padding:.85rem 1rem;display:flex;flex-wrap:nowrap;gap:.4rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:relative;z-index:1}
-.filterbar::-webkit-scrollbar{display:none}
-.ftag{padding:5px 13px;border-radius:999px;font-size:.74rem;font-weight:500;cursor:pointer;transition:all .2s var(--ease);border:1.5px solid var(--border);background:var(--white);color:var(--warm-gray);font-family:var(--ff-b);box-shadow:var(--shadow-sm);white-space:nowrap;flex-shrink:0}
-.ftag:hover{border-color:var(--blue);color:var(--brown);background:var(--blue-bg)}
-.ftag.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(37,99,235,.3)}
-
-/* ── GRID ─────────────────────────────────────────── */
-.grid-wrap{max-width:1400px;margin:0 auto;padding:0 1rem 4rem;position:relative;z-index:1}
-.posts-grid{display:grid;grid-template-columns:1fr;gap:1rem}
-@media(min-width:600px){.posts-grid{grid-template-columns:repeat(2,1fr)}}
-@media(min-width:960px){.posts-grid{grid-template-columns:repeat(3,1fr)}}
-@media(min-width:1280px){.posts-grid{grid-template-columns:repeat(4,1fr)}}
-
-/* ── CARD ─────────────────────────────────────────── */
-.card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;opacity:0;transform:translateY(16px);animation:riseIn .5s var(--ease) forwards;transition:transform .3s var(--ease),box-shadow .3s var(--ease),border-color .3s;box-shadow:var(--shadow);display:flex;flex-direction:column}
-.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-xl);border-color:var(--blue2)}
-.card-top-bar{height:3px;background:linear-gradient(90deg,var(--blue),var(--blue2),var(--blue3));flex-shrink:0}
-.card-body{padding:1.1rem;flex:1;display:flex;flex-direction:column}
-
-/* Social-style post meta */
-.post-meta{display:flex;align-items:center;gap:8px;margin-bottom:.85rem;padding-bottom:.75rem;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
-.post-avatar{width:34px;height:34px;background:linear-gradient(135deg,#1e3a8a,var(--blue));border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:.9rem;font-weight:700;color:#fff;flex-shrink:0;box-shadow:0 2px 6px rgba(225,29,72,.25)}
-.post-meta-info{flex:1;min-width:0}
-.post-author{font-family:var(--ff-b);font-size:.78rem;font-weight:700;color:var(--brown);display:flex;align-items:center;gap:4px;flex-wrap:wrap}
-.post-author-badge{font-family:var(--ff-m);font-size:.56rem;background:var(--blue-lt);color:var(--blue);border:1px solid var(--blue3);padding:1px 5px;border-radius:3px}
-.post-time{font-size:.68rem;color:var(--warm-gray2);font-family:var(--ff-m)}
-.post-cat{font-family:var(--ff-c);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:var(--radius-xs);background:var(--red-lt);color:var(--red);border:1px solid rgba(225,29,72,.18);white-space:nowrap;font-weight:700;margin-left:auto}
-
-.card-title{font-family:var(--ff-d);font-size:1.1rem;font-weight:700;line-height:1.3;margin-bottom:.4rem;color:var(--brown)}
-.card-desc{font-size:.82rem;color:var(--warm-gray);line-height:1.65;margin-bottom:.85rem;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:.9rem}
-.ctag{font-size:.67rem;padding:2px 8px;border-radius:var(--radius-xs);background:var(--blue-bg);color:var(--blue);border:1px solid rgba(37,99,235,.25);font-family:var(--ff-m);cursor:pointer;transition:all .2s;font-weight:500}
-.ctag:hover{background:var(--blue3);color:var(--brown);border-color:var(--blue)}
-
-/* Card footer */
-.card-footer{padding:.75rem 1.1rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:.6rem;background:var(--cream);flex-wrap:wrap}
-.card-link{display:inline-flex;align-items:center;gap:5px;font-size:.76rem;font-weight:600;color:var(--red);padding:6px 14px;border:1.5px solid var(--red);border-radius:999px;background:transparent;transition:all .25s var(--ease);font-family:var(--ff-b);white-space:nowrap}
-.card-link:hover{background:var(--red);color:#fff;box-shadow:0 4px 14px rgba(225,29,72,.3);text-decoration:none}
-.card-link svg{transition:transform .2s;flex-shrink:0}
-.card-link:hover svg{transform:translate(2px,-2px)}
-
-/* ── 🔥 FIRE / LIKE BUTTON ───────────────────────── */
-.fire-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border:1.5px solid var(--border2);border-radius:999px;background:var(--white);cursor:pointer;font-family:var(--ff-b);font-size:.76rem;font-weight:600;color:var(--warm-gray);transition:all .25s var(--ease);margin-left:auto;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;min-width:56px;justify-content:center}
-.fire-btn:hover{border-color:var(--blue2);background:var(--blue-bg);color:var(--brown);transform:scale(1.05)}
-.fire-btn.liked{background:#FFFFFF;border-color:var(--blue2);color:var(--brown)}
-.fire-btn .fire-emoji{font-size:1rem;display:inline-block;transition:transform .15s var(--ease);line-height:1}
-.fire-btn:hover .fire-emoji{transform:scale(1.2) rotate(-10deg)}
-.fire-btn .fire-count{font-family:var(--ff-m);font-size:.72rem;font-weight:500;min-width:12px;text-align:center}
-
-/* Fire burst animation on click */
-@keyframes fireBurst{
-  0%  {transform:scale(1)}
-  25% {transform:scale(1.5) rotate(-15deg)}
-  50% {transform:scale(1.3) rotate(10deg)}
-  75% {transform:scale(1.4) rotate(-5deg)}
-  100%{transform:scale(1)}
+function showAdmin() {
+  loginScreen.style.display = "none";
+  adminWrap.style.display   = "block";
+  loadPosts();
 }
-.fire-btn.firing .fire-emoji{animation:fireBurst .5s var(--ease) forwards}
 
-@keyframes countPop{
-  0%  {transform:translateY(0);opacity:1}
-  40% {transform:translateY(-6px);opacity:.7}
-  100%{transform:translateY(0);opacity:1}
+function logout() {
+  sessionStorage.removeItem(SK);
+  adminKey = "";
+  loginScreen.style.display = "flex";
+  adminWrap.style.display   = "none";
+  loginInput.value = "";
+  loginErr.textContent = "";
 }
-.fire-btn.firing .fire-count{animation:countPop .4s var(--ease)}
 
-/* ── EMPTY / LOADER ───────────────────────────────── */
-.empty{grid-column:1/-1;text-align:center;padding:4rem 1rem}
-.empty-icon{font-size:3rem;margin-bottom:.75rem;opacity:.25}
-.empty-t{font-family:var(--ff-d);font-size:1.3rem;color:var(--warm-gray);font-style:italic;margin-bottom:.35rem}
-.empty-s{font-size:.8rem;color:var(--warm-gray2)}
-.loader{grid-column:1/-1;display:flex;justify-content:center;align-items:center;gap:7px;padding:4rem}
-.ld{width:9px;height:9px;border-radius:50%;background:var(--blue);animation:ldp 1.2s ease-in-out infinite}
-.ld:nth-child(2){background:var(--red);animation-delay:.2s}
-.ld:nth-child(3){background:var(--blue2);animation-delay:.4s}
-@keyframes ldp{0%,80%,100%{transform:scale(.55);opacity:.3}40%{transform:scale(1);opacity:1}}
+// ── LOAD POSTS ────────────────────────────────────
+async function loadPosts() {
+  try {
+    const res  = await fetch(`${API}/posts`);
+    const data = await res.json();
+    all = data.posts || [];
 
-/* ── TOAST ────────────────────────────────────────── */
-.toast{position:fixed;bottom:1.25rem;right:1rem;left:1rem;max-width:320px;margin:0 auto;z-index:9000;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 16px;font-size:.83rem;display:flex;align-items:center;gap:9px;box-shadow:var(--shadow-xl);opacity:0;transform:translateY(10px) scale(.97);transition:all .3s var(--ease);pointer-events:none;font-family:var(--ff-b);color:var(--brown)}
-@media(min-width:480px){.toast{left:auto;right:1.5rem;max-width:300px}}
-.toast.show{opacity:1;transform:translateY(0) scale(1)}
-.toast.success{border-left:3px solid var(--blue)}
-.toast.success .ti{color:var(--blue);font-size:1rem}
-.toast.error{border-left:3px solid var(--red)}
-.toast.error .ti{color:var(--red);font-size:1rem}
-.toast.info .ti{color:var(--blue2);font-size:1rem}
+    // Parse categories (can be comma-separated)
+    const catSet = new Set();
+    all.forEach(p => {
+      if (p.category) p.category.split(",").map(c => c.trim()).filter(Boolean).forEach(c => catSet.add(c));
+    });
+    const cats = [...catSet].sort();
+    const tags = new Set(all.flatMap(p => p.tags || []));
 
-/* ══════════════════════════════════════════════════
-   ADMIN LOGIN — Art Deco Animated
-══════════════════════════════════════════════════ */
-.login-screen{position:fixed;inset:0;background:var(--cream2);display:flex;align-items:center;justify-content:center;z-index:999;overflow:hidden;padding:1rem}
-.login-rays{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.login-rays::before{content:'';position:absolute;width:200vmax;height:200vmax;background:conic-gradient(from 0deg,rgba(37,99,235,.06) 0deg,transparent 5deg,rgba(37,99,235,.04) 10deg,transparent 15deg,rgba(225,29,72,.04) 20deg,transparent 25deg,rgba(37,99,235,.06) 30deg,transparent 35deg,rgba(59,130,246,.03) 40deg,transparent 45deg);animation:spinRays 40s linear infinite}
-@keyframes spinRays{to{transform:rotate(360deg)}}
-.login-geo{position:absolute;border:2px solid rgba(37,99,235,.15);animation:floatGeo 8s ease-in-out infinite;pointer-events:none}
-.login-geo.g1{width:100px;height:100px;border-radius:50%;top:12%;left:8%;animation-delay:0s}
-.login-geo.g2{width:70px;height:70px;transform:rotate(45deg);bottom:18%;right:10%;animation-delay:-3s;border-color:rgba(225,29,72,.12)}
-.login-geo.g3{width:160px;height:160px;border-radius:50%;bottom:8%;left:5%;animation-delay:-5s;border-color:rgba(37,99,235,.08)}
-.login-geo.g4{width:50px;height:50px;top:22%;right:12%;animation-delay:-2s;border-color:rgba(225,29,72,.10)}
-@keyframes floatGeo{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-16px) rotate(12deg)}}
-.login-geo.g2{animation-name:floatGeo2}
-@keyframes floatGeo2{0%,100%{transform:rotate(45deg) translateY(0)}50%{transform:rotate(60deg) translateY(-12px)}}
+    setEl("sbPosts", all.length);
+    setEl("sbCats",  cats.length);
+    setEl("sbTags",  tags.size);
+    setEl("feedCount", `${all.length} post${all.length !== 1 ? "s" : ""}`);
 
-.login-box{width:100%;max-width:400px;background:var(--white);border:2px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-xl);position:relative;animation:riseIn .7s var(--ease) forwards;opacity:0;transform:translateY(20px)}
-.login-header-bar{background:linear-gradient(135deg,#1e3a8a 0%,#2563EB 60%,#3B82F6 100%);padding:1.75rem 2rem 1.4rem;text-align:center;position:relative;overflow:hidden}
-.login-header-bar::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(255,255,255,.05) 8px,rgba(255,255,255,.05) 16px)}
+    const sbCatList = document.getElementById("sbCatList");
+    if (sbCatList) {
+      sbCatList.innerHTML = cats.map(c =>
+        `<button class="sb-cat" onclick="filterFeed('${esc(c)}')">${esc(c)}</button>`
+      ).join("") || `<p style="font-size:.74rem;color:var(--warm-gray2);padding:4px 2px">No categories yet</p>`;
+    }
 
-.compass{width:60px;height:60px;margin:0 auto .85rem;position:relative;animation:compassSpin 12s linear infinite}
-.compass-ring{position:absolute;inset:0;border:2px solid rgba(255,255,255,.5);border-radius:50%}
-.compass-ring::before,.compass-ring::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.6)}
-.compass-ring::before{width:2px;height:100%}
-.compass-ring::after{width:100%;height:2px}
-.compass-inner{position:absolute;inset:8px;border:1.5px solid rgba(255,255,255,.35);border-radius:50%;animation:compassSpin 6s linear infinite reverse}
-.compass-dot{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:9px;height:9px;background:white;border-radius:50%;box-shadow:0 0 8px rgba(255,255,255,.8)}
-@keyframes compassSpin{to{transform:rotate(360deg)}}
+    renderFeed(all);
+  } catch (e) {
+    if (feed) feed.innerHTML = `<p style="color:var(--red);font-size:.85rem;padding:1rem">Failed to load: ${esc(e.message)}</p>`;
+  }
+}
 
-.login-hdr-title{font-family:var(--ff-d);font-size:1.4rem;font-weight:700;color:#fff;letter-spacing:-.01em;position:relative}
-.login-hdr-sub{font-size:.7rem;color:rgba(255,255,255,.75);font-family:var(--ff-m);letter-spacing:.1em;text-transform:uppercase;margin-top:.3rem;position:relative}
-.login-form-area{padding:1.75rem}
-.login-field-wrap{margin-bottom:.9rem}
-.login-field-label{font-size:.68rem;font-weight:700;color:var(--warm-gray);font-family:var(--ff-m);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem;display:block}
-.login-field{width:100%;background:var(--cream);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--brown);font-family:var(--ff-b);font-size:.95rem;outline:none;text-align:center;letter-spacing:.2em;transition:all .25s var(--ease)}
-.login-field:focus{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
-.login-btn{width:100%;padding:12px;background:linear-gradient(135deg,#1e3a8a,#2563EB);border:none;border-radius:var(--radius-sm);color:#fff;font-family:var(--ff-c);font-size:1rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .25s var(--ease);box-shadow:0 4px 16px rgba(37,99,235,.3);touch-action:manipulation}
-.login-btn:hover,.login-btn:focus-visible{background:linear-gradient(135deg,#2563EB,#1e3a8a);box-shadow:0 8px 28px rgba(225,29,72,.4);transform:translateY(-1px)}
-.login-btn:active{transform:translateY(0)}
-.login-divider{text-align:center;font-family:var(--ff-m);font-size:.66rem;color:var(--warm-gray2);letter-spacing:.1em;margin:.85rem 0;display:flex;align-items:center;gap:.65rem}
-.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border)}
-.login-err{text-align:center;font-size:.72rem;color:var(--red);min-height:1.1em;font-family:var(--ff-m);margin-top:.5rem}
+window.filterFeed = cat => {
+  if (!cat) { renderFeed(all); return; }
+  renderFeed(all.filter(p => {
+    const cats = (p.category || "").split(",").map(c => c.trim());
+    return cats.includes(cat) || (p.tags || []).includes(cat);
+  }));
+};
 
-/* ══════════════════════════════════════════════════
-   ADMIN SHELL
-══════════════════════════════════════════════════ */
-.wrap{position:relative;z-index:1}
-.admin-shell{display:flex;flex-direction:column;min-height:calc(100vh - 60px)}
-@media(min-width:900px){.admin-shell{flex-direction:row}}
+// ── RENDER FEED ───────────────────────────────────
+function renderFeed(posts) {
+  if (!posts.length) {
+    feed.innerHTML = `<div style="text-align:center;padding:2.5rem;color:var(--warm-gray)"><p style="font-family:var(--ff-d);font-size:1.15rem;font-style:italic">No posts yet</p><p style="font-size:.82rem;margin-top:.4rem">Publish your first post above!</p></div>`;
+    return;
+  }
+  feed.innerHTML = posts.map((p, i) => `
+    <div class="post-card" style="animation-delay:${i * 0.04}s">
+      <div class="post-card-header">
+        <img src="icon/post_picture.png" alt="Space Pirate" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);flex-shrink:0;"/>
+        <div class="pc-meta">
+          <div class="pc-author">Space Pirate <span class="pc-badge">Admin</span></div>
+          <div class="pc-time">${fmt(p.createdAt)}</div>
+        </div>
+        <span class="pc-cat">${esc(p.category.split(",")[0].trim())}</span>
+      </div>
+      <div class="post-card-body">
+        <div class="pc-title">${esc(p.title)}</div>
+        ${p.description ? `<div class="pc-desc">${esc(p.description)}</div>` : ""}
+        <span class="pc-url">${esc(p.url)}</span>
+        ${p.tags && p.tags.length ? `<div class="pc-tags">${p.tags.map(t => `<span class="pc-tag">${esc(t)}</span>`).join("")}</div>` : ""}
+      </div>
+      <div class="post-card-footer">
+        <a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer" class="btn-preview-link">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          Open
+        </a>
+        <span class="pc-likes">🔥 ${p.likes || 0}</span>
+        <button class="btn-edit" onclick="editPost('${esc(p.id)}')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button class="btn-del" onclick="delPost('${esc(p.id)}')">
+          Delete
+        </button>
+      </div>
+    </div>`).join("");
+}
 
-/* ── SIDEBAR ──────────────────────────────────────── */
-.sidebar{background:var(--white);border-bottom:2px solid var(--border);padding:1.25rem 1rem;box-shadow:0 2px 8px rgba(44,26,14,.05)}
-@media(min-width:900px){.sidebar{width:260px;flex-shrink:0;border-bottom:none;border-right:2px solid var(--border);position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;padding:1.5rem 1.25rem}}
+// ── CATEGORY MULTI-SELECT ─────────────────────────
+function buildCatDropdown() {
+  catDropdown.innerHTML = CATEGORIES.map(c => `
+    <div class="ms-option" data-cat="${esc(c)}" onclick="toggleCat('${esc(c)}')">
+      <div class="ms-checkbox"></div>
+      ${esc(c)}
+    </div>`).join("");
+}
 
-/* Mobile sidebar - collapsible */
-.sidebar-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:.25rem 0;font-family:var(--ff-c);font-size:.8rem;font-weight:700;color:var(--warm-gray);text-transform:uppercase;letter-spacing:.1em}
-@media(min-width:900px){.sidebar-toggle{display:none}}
-.sidebar-toggle svg{transition:transform .3s}
-.sidebar-toggle.open svg{transform:rotate(180deg)}
-.sidebar-content{display:none}
-@media(min-width:900px){.sidebar-content{display:block !important}}
-.sidebar-content.open{display:block}
+function toggleCatDropdown() {
+  const isOpen = catDropdown.classList.toggle("open");
+  catTrigger.classList.toggle("open", isOpen);
+}
 
-.sb-section{margin-bottom:1.5rem}
-.sb-lbl{font-family:var(--ff-m);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--warm-gray2);margin-bottom:.65rem;display:flex;align-items:center;gap:6px}
-.sb-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+function closeCatDropdown() {
+  catDropdown.classList.remove("open");
+  catTrigger.classList.remove("open");
+}
 
-/* Mobile stats — horizontal scroll row */
-.sb-stats-row{display:flex;gap:.5rem;overflow-x:auto;scrollbar-width:none;padding-bottom:.25rem}
-.sb-stats-row::-webkit-scrollbar{display:none}
-@media(min-width:900px){.sb-stats-row{flex-direction:column;overflow:visible}}
+window.toggleCat = function(cat) {
+  selectedCats = selectedCats.includes(cat)
+    ? selectedCats.filter(c => c !== cat)
+    : [...selectedCats, cat];
+  updateCatUI();
+};
 
-.sb-stat{padding:10px 12px;background:var(--cream2);border:1.5px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;gap:10px;transition:all .2s;flex-shrink:0}
-@media(min-width:900px){.sb-stat{margin-bottom:.5rem}}
-.sb-stat:hover{border-color:var(--blue2);background:var(--blue-bg)}
-.sb-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
-.sb-icon.a{background:rgba(37,99,235,.12)}
-.sb-icon.b{background:rgba(225,29,72,.10)}
-.sb-icon.c{background:rgba(59,130,246,.15)}
-.sb-val{font-family:var(--ff-d);font-size:1.35rem;font-weight:700;color:var(--brown);line-height:1;margin-bottom:1px}
-.sb-lbl2{font-size:.66rem;color:var(--warm-gray);font-family:var(--ff-b);white-space:nowrap}
+function updateCatUI() {
+  // Rebuild trigger content
+  catTrigger.innerHTML = "";
+  if (!selectedCats.length) {
+    catTrigger.innerHTML = `<span class="ms-placeholder">Select categories…</span>`;
+  } else {
+    selectedCats.forEach(c => {
+      const chip = document.createElement("div");
+      chip.className = "ms-chip";
+      chip.innerHTML = `${esc(c)}<button class="ms-chip-x" onclick="event.stopPropagation();toggleCat('${esc(c)}')">&times;</button>`;
+      catTrigger.appendChild(chip);
+    });
+  }
+  catTrigger.innerHTML += `<svg class="ms-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>`;
 
-.sb-cats{display:flex;flex-direction:column;gap:3px}
-.sb-cat{padding:7px 10px;background:transparent;border:1px solid transparent;border-radius:var(--radius-sm);color:var(--warm-gray);font-family:var(--ff-b);font-size:.76rem;cursor:pointer;text-align:left;transition:all .2s;display:flex;align-items:center;gap:7px}
-.sb-cat::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--warm-gray3);flex-shrink:0;transition:background .2s}
-.sb-cat:hover{background:var(--blue-bg);border-color:var(--border);color:var(--brown)}
-.sb-cat:hover::before{background:var(--blue)}
+  catDropdown.querySelectorAll(".ms-option").forEach(opt => {
+    opt.classList.toggle("selected", selectedCats.includes(opt.dataset.cat));
+  });
+}
 
-/* ── ADMIN MAIN ───────────────────────────────────── */
-.admin-main{flex:1;padding:1.25rem 1rem 3rem;background:var(--cream);min-height:0}
-@media(min-width:600px){.admin-main{padding:1.75rem 1.75rem 3rem}}
-@media(min-width:900px){.admin-main{padding:2rem 2.5rem 3rem}}
+// ── TAGS GRID ─────────────────────────────────────
+function buildTagsGrid() {
+  const tagsGrid = document.getElementById("tagsGrid");
+  if (!tagsGrid) return;
+  tagsGrid.innerHTML = PRESET_TAGS.map(tag => {
+    const safeId = "tag_" + tag.replace(/[^a-zA-Z0-9]/g, "_");
+    return `
+    <div>
+      <input type="checkbox" class="tag-checkbox" id="${safeId}" value="${esc(tag)}"/>
+      <label class="tag-label" for="${safeId}">
+        <span class="tag-check-icon">✓</span>${esc(tag)}
+      </label>
+    </div>`;
+  }).join("");
+}
 
-/* ── FORM CARD ────────────────────────────────────── */
-.form-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:2rem;box-shadow:var(--shadow)}
-.form-card-header{background:#FFFFFF;border-bottom:1.5px solid var(--border);padding:1rem 1.25rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.fh-icon{width:34px;height:34px;background:linear-gradient(135deg,#1e3a8a,var(--blue));border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem;flex-shrink:0}
-.fh-title{font-family:var(--ff-d);font-size:1.15rem;font-weight:700;color:var(--brown)}
-.fh-sub{font-size:.74rem;color:var(--warm-gray);font-family:var(--ff-b);margin-left:auto;white-space:nowrap}
-.form-body{padding:1.25rem}
-@media(min-width:600px){.form-body{padding:1.5rem}}
+function getSelectedTags() {
+  return [...document.querySelectorAll(".tag-checkbox:checked")].map(cb => cb.value);
+}
 
-.form-grid{display:grid;grid-template-columns:1fr;gap:.9rem}
-@media(min-width:600px){.form-grid{grid-template-columns:1fr 1fr}}
-.fg{display:flex;flex-direction:column;gap:5px}
-.fg.full{grid-column:1/-1}
-.fg-label{font-size:.68rem;font-weight:700;color:var(--warm-gray);font-family:var(--ff-m);text-transform:uppercase;letter-spacing:.07em}
-.fg-label .req{color:var(--red)}
-.fg-input,.fg-ta{background:var(--cream);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;color:var(--brown);font-family:var(--ff-b);font-size:.88rem;outline:none;transition:all .25s var(--ease);width:100%;-webkit-appearance:none}
-.fg-input::placeholder,.fg-ta::placeholder{color:var(--warm-gray2)}
-.fg-input:focus,.fg-ta:focus{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
-.fg-ta{resize:vertical;min-height:88px}
+// ── EDIT MODE ─────────────────────────────────────
+window.editPost = function(id) {
+  const post = all.find(p => p.id === id);
+  if (!post) return;
 
-/* Multi-select category dropdown */
-.multi-select-wrap{position:relative}
-.multi-select-trigger{background:var(--cream);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:7px 34px 7px 11px;color:var(--brown);font-family:var(--ff-b);font-size:.88rem;cursor:pointer;transition:all .25s var(--ease);display:flex;align-items:center;flex-wrap:wrap;gap:4px;min-height:40px;user-select:none;position:relative;touch-action:manipulation}
-.multi-select-trigger:hover,.multi-select-trigger.open{border-color:var(--blue);background:var(--white)}
-.multi-select-trigger.open{box-shadow:0 0 0 3px rgba(37,99,235,.1);border-radius:var(--radius-sm) var(--radius-sm) 0 0}
-.ms-arrow{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--warm-gray2);transition:transform .2s;pointer-events:none;flex-shrink:0}
-.multi-select-trigger.open .ms-arrow{transform:translateY(-50%) rotate(180deg)}
-.ms-placeholder{color:var(--warm-gray2);font-size:.86rem}
-.ms-chip{display:inline-flex;align-items:center;gap:3px;background:var(--red-lt);border:1px solid rgba(225,29,72,.2);color:var(--red);border-radius:4px;padding:2px 6px;font-size:.7rem;font-family:var(--ff-b);font-weight:600}
-.ms-chip-x{background:none;border:none;color:inherit;cursor:pointer;font-size:.85rem;line-height:1;padding:0;opacity:.7}
-.ms-chip-x:hover{opacity:1}
-.ms-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--white);border:1.5px solid var(--blue);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);box-shadow:var(--shadow-lg);z-index:100;max-height:200px;overflow-y:auto;display:none}
-.ms-dropdown.open{display:block;animation:dropIn .2s var(--ease)}
-@keyframes dropIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
-.ms-option{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;font-size:.84rem;color:var(--brown);font-family:var(--ff-b);transition:background .15s;touch-action:manipulation}
-.ms-option:hover{background:var(--blue-bg)}
-.ms-option.selected{background:rgba(225,29,72,.04);color:var(--red);font-weight:600}
-.ms-checkbox{width:15px;height:15px;border:1.5px solid var(--border2);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:.62rem;color:transparent}
-.ms-option.selected .ms-checkbox{background:var(--red);border-color:var(--red);color:#fff}
+  editingId = id;
 
-/* Tags grid */
-.tags-grid-wrap{background:var(--cream);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:.65rem;max-height:160px;overflow-y:auto}
-.tags-grid{display:flex;flex-wrap:wrap;gap:.35rem}
-.tag-checkbox{display:none}
-.tag-label{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:var(--radius-xs);border:1.5px solid var(--border2);background:var(--white);font-size:.7rem;font-family:var(--ff-m);cursor:pointer;transition:all .18s;color:var(--warm-gray);user-select:none;touch-action:manipulation}
-.tag-label:hover{border-color:var(--blue);color:var(--brown);background:var(--blue-bg)}
-.tag-checkbox:checked + .tag-label{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 6px rgba(37,99,235,.3)}
-.tag-check-icon{display:none;font-size:.62rem}
-.tag-checkbox:checked + .tag-label .tag-check-icon{display:inline}
-.fg-hint{font-size:.64rem;color:var(--muted,var(--warm-gray2));font-family:var(--ff-m)}
+  // Fill form fields
+  document.getElementById("fTitle").value = post.title || "";
+  document.getElementById("fDesc").value  = post.description || "";
+  document.getElementById("fUrl").value   = post.url || "";
 
-/* Submit button */
-.btn-pub{display:inline-flex;align-items:center;gap:7px;padding:10px 24px;background:linear-gradient(135deg,var(--red),var(--red2));border:none;border-radius:999px;color:#fff;font-family:var(--ff-c);font-size:.92rem;font-weight:700;letter-spacing:.05em;cursor:pointer;transition:all .25s var(--ease);box-shadow:0 4px 14px rgba(225,29,72,.3);margin-top:.5rem;touch-action:manipulation;-webkit-appearance:none}
-.btn-pub:hover{box-shadow:0 8px 28px rgba(225,29,72,.4);transform:translateY(-1px)}
-.btn-pub:active{transform:translateY(0)}
-.btn-pub:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  // Set categories
+  selectedCats = post.category ? post.category.split(",").map(c => c.trim()).filter(Boolean) : [];
+  updateCatUI();
 
-/* ── FEED HEAD ────────────────────────────────────── */
-.feed-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
-.feed-title{font-family:var(--ff-d);font-size:1.2rem;font-weight:700;color:var(--brown)}
-.feed-badge{font-family:var(--ff-m);font-size:.7rem;color:var(--warm-gray);background:var(--white);border:1.5px solid var(--border);padding:2px 9px;border-radius:999px;box-shadow:var(--shadow-sm)}
+  // Set tags
+  document.querySelectorAll(".tag-checkbox").forEach(cb => {
+    cb.checked = (post.tags || []).includes(cb.value);
+  });
 
-.feed{display:flex;flex-direction:column;gap:.85rem}
+  // Switch form to edit mode UI
+  document.getElementById("fhIcon").textContent   = "✎";
+  document.getElementById("fhTitle").textContent  = "Edit Post";
+  document.getElementById("fhSub").textContent    = `Editing: "${post.title}"`;
+  document.getElementById("submitLabel").textContent = "Save Changes";
+  document.getElementById("submitIcon").innerHTML = `<path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>`;
+  cancelEditBtn.style.display = "inline-flex";
 
-/* Facebook-style post card in admin */
-.post-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);opacity:0;animation:riseIn .4s var(--ease) forwards;transition:box-shadow .25s,border-color .25s}
-.post-card:hover{box-shadow:var(--shadow-lg);border-color:var(--blue2)}
-.post-card-header{padding:.9rem 1.1rem .7rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-wrap:wrap}
-.pc-avatar{width:38px;height:38px;background:linear-gradient(135deg,#1e3a8a,var(--blue));border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:1rem;font-weight:700;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(225,29,72,.2)}
-.pc-meta{flex:1;min-width:0}
-.pc-author{font-weight:700;font-size:.84rem;color:var(--brown);font-family:var(--ff-b);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.pc-badge{font-family:var(--ff-m);font-size:.56rem;background:var(--blue-lt);color:var(--blue);border:1px solid var(--blue3);padding:1px 6px;border-radius:3px;font-weight:500}
-.pc-time{font-size:.68rem;color:var(--warm-gray2);font-family:var(--ff-m);margin-top:1px}
-.pc-cat{font-family:var(--ff-c);font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border-radius:var(--radius-xs);background:var(--red-lt);color:var(--red);border:1px solid rgba(225,29,72,.18);white-space:nowrap;margin-left:auto}
-.post-card-body{padding:.9rem 1.1rem}
-.pc-title{font-family:var(--ff-d);font-size:1.05rem;font-weight:700;color:var(--brown);margin-bottom:.3rem;line-height:1.3}
-.pc-desc{font-size:.8rem;color:var(--warm-gray);line-height:1.6;margin-bottom:.65rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.pc-url{font-family:var(--ff-m);font-size:.66rem;color:var(--warm-gray2);margin-bottom:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
-.pc-tags{display:flex;flex-wrap:wrap;gap:4px}
-.pc-tag{font-size:.65rem;padding:2px 7px;border-radius:var(--radius-xs);background:var(--blue-bg);color:var(--blue);border:1px solid rgba(37,99,235,.22);font-family:var(--ff-m)}
-.post-card-footer{padding:.7rem 1.1rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:.5rem;background:var(--cream);flex-wrap:wrap}
-.btn-preview-link{display:inline-flex;align-items:center;gap:5px;font-size:.75rem;color:var(--blue);padding:5px 12px;border:1.5px solid var(--border);border-radius:999px;background:var(--white);font-family:var(--ff-b);font-weight:500;transition:all .2s;text-decoration:none;white-space:nowrap}
-.btn-preview-link:hover{border-color:var(--blue2);color:var(--brown);background:var(--blue-bg);text-decoration:none}
+  // Highlight form card and scroll to it
+  const formCard = document.getElementById("formCard");
+  formCard.classList.add("editing");
+  formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+};
 
-/* Admin fire button (display only, no click) */
-.pc-likes{display:inline-flex;align-items:center;gap:4px;font-family:var(--ff-m);font-size:.72rem;color:var(--warm-gray2);padding:4px 10px;border:1.5px solid var(--border);border-radius:999px;background:var(--cream)}
+function cancelEdit() {
+  editingId = null;
+  resetForm();
+  document.getElementById("fhIcon").textContent   = "✦";
+  document.getElementById("fhTitle").textContent  = "Publish New Post";
+  document.getElementById("fhSub").textContent    = "Posted as \"Space Pirate\"";
+  document.getElementById("submitLabel").textContent = "Publish Post";
+  document.getElementById("submitIcon").innerHTML = `<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>`;
+  cancelEditBtn.style.display = "none";
+  document.getElementById("formCard").classList.remove("editing");
+}
 
-.btn-del{margin-left:auto;padding:5px 13px;background:transparent;color:var(--red);border:1.5px solid rgba(225,29,72,.25);border-radius:999px;font-size:.74rem;cursor:pointer;transition:all .2s;font-family:var(--ff-b);font-weight:600;white-space:nowrap;touch-action:manipulation}
-.btn-del:hover{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 3px 12px rgba(225,29,72,.3)}
-.btn-edit{display:inline-flex;align-items:center;gap:4px;padding:5px 13px;background:transparent;color:var(--blue);border:1.5px solid rgba(37,99,235,.25);border-radius:999px;font-size:.74rem;cursor:pointer;transition:all .2s;font-family:var(--ff-b);font-weight:600;white-space:nowrap;touch-action:manipulation}
-.btn-edit:hover{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 3px 12px rgba(37,99,235,.3)}
-.btn-cancel-edit{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:transparent;color:var(--warm-gray);border:1.5px solid var(--border2);border-radius:999px;font-size:.74rem;cursor:pointer;transition:all .2s;font-family:var(--ff-b);font-weight:600;white-space:nowrap}
-.btn-cancel-edit:hover{background:var(--warm-gray);color:#fff;border-color:var(--warm-gray)}
-.form-card.editing{border:2px solid var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.08)}
-.form-card.editing .form-card-header{background:linear-gradient(135deg,#EFF6FF,#DBEAFE)}
+// ── SUBMIT (create or update) ─────────────────────
+async function handleSubmit() {
+  const title = document.getElementById("fTitle").value.trim();
+  const desc  = document.getElementById("fDesc").value.trim();
+  const url   = document.getElementById("fUrl").value.trim();
+  const tags  = getSelectedTags();
 
-/* ── ANIMATIONS ───────────────────────────────────── */
-@keyframes riseIn{to{opacity:1;transform:translateY(0)}}
-@keyframes spin{to{transform:rotate(360deg)}}
+  if (!title) { toast("Title is required.", "error"); return; }
+  if (!url)   { toast("URL is required.", "error"); return; }
+  if (!selectedCats.length) { toast("Please select at least one category.", "error"); return; }
 
-/* ── MISC MOBILE HELPERS ──────────────────────────── */
-/* prevent zoom on input focus on iOS */
-@media(max-width:600px){
-  input,textarea,select{font-size:16px !important}
-  .fg-input,.fg-ta,.login-field,.search-input{font-size:16px !important}
+  try { new URL(url); }
+  catch { toast("Please enter a valid URL (include https://).", "error"); return; }
+
+  const category = selectedCats.join(", ");
+  const isEditing = !!editingId;
+
+  submitBtn.disabled = true;
+  document.getElementById("submitLabel").textContent = isEditing ? "Saving…" : "Publishing…";
+
+  try {
+    if (isEditing) {
+      // Delete old post then create new one with same data (preserves likes)
+      await fetch(`${API}/post`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+        body: JSON.stringify({ id: editingId })
+      });
+    }
+
+    const res = await fetch(`${API}/post`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+      body: JSON.stringify({ title, description: desc, url, category, tags })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || (isEditing ? "Failed to save" : "Failed to publish"));
+    }
+
+    toast(isEditing ? "Post updated successfully! ✏️" : "Post published successfully! 🎉", "success");
+    cancelEdit();
+    await loadPosts();
+  } catch (e) {
+    toast(e.message, "error");
+  } finally {
+    submitBtn.disabled = false;
+    document.getElementById("submitLabel").textContent = editingId ? "Save Changes" : (isEditing ? "Save Changes" : "Publish Post");
+  }
+}
+
+function resetForm() {
+  document.getElementById("fTitle").value = "";
+  document.getElementById("fDesc").value  = "";
+  document.getElementById("fUrl").value   = "";
+  selectedCats = [];
+  updateCatUI();
+  closeCatDropdown();
+  document.querySelectorAll(".tag-checkbox").forEach(cb => cb.checked = false);
+}
+
+// ── DELETE ────────────────────────────────────────
+window.delPost = async function(id) {
+  if (!confirm("Delete this post? This cannot be undone.")) return;
+  try {
+    const res = await fetch(`${API}/post`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+      body: JSON.stringify({ id })
+    });
+    if (!res.ok) throw new Error("Delete failed");
+    toast("Post deleted.", "success");
+    await loadPosts();
+  } catch (e) {
+    toast(e.message, "error");
+  }
+};
+
+// ── HELPERS ───────────────────────────────────────
+function fmt(iso) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function esc(s) {
+  if (!s) return "";
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function setEl(id, v) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = v;
+}
+
+function toast(msg, type = "info") {
+  const el = document.getElementById("toast");
+  if (!el) return;
+  document.getElementById("toastMsg").textContent = msg;
+  document.getElementById("toastIcon").textContent = { success: "✓", error: "✕", info: "●" }[type] || "●";
+  el.className = `toast ${type}`;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 3500);
 }
