@@ -90,8 +90,68 @@ img{max-width:100%}
 .search-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
 
 /* ── FILTER BAR ───────────────────────────────────── */
-.filterbar{max-width:1400px;margin:0 auto;padding:.85rem 1rem;display:flex;flex-wrap:nowrap;gap:.4rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:relative;z-index:1}
+.filterbar-wrap{
+  max-width:1400px;margin:0 auto;
+  display:flex;align-items:center;
+  padding:.5rem 0;
+  position:relative;z-index:1;
+}
+
+/* soft fade edges so tags gracefully disappear under the buttons */
+.filterbar-wrap::before,
+.filterbar-wrap::after{
+  content:'';
+  position:absolute;top:0;bottom:0;width:52px;
+  pointer-events:none;z-index:2;
+  transition:opacity .3s;
+}
+.filterbar-wrap::before{
+  left:46px;
+  background:linear-gradient(to right, rgba(255,255,255,.95) 0%, transparent 100%);
+}
+.filterbar-wrap::after{
+  right:46px;
+  background:linear-gradient(to left, rgba(255,255,255,.95) 0%, transparent 100%);
+}
+
+.filterbar{
+  flex:1;
+  padding:.35rem 1rem;
+  display:flex;flex-wrap:nowrap;gap:.4rem;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
 .filterbar::-webkit-scrollbar{display:none}
+
+/* ── SCROLL ARROW BUTTONS ─────────────────────────── */
+.fscroll-btn{
+  flex-shrink:0;
+  width:34px;height:34px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+  border:1.5px solid var(--border2);
+  background:var(--white);
+  color:var(--warm-gray);
+  cursor:pointer;
+  box-shadow:0 2px 8px rgba(44,26,14,.10);
+  transition:all .22s var(--ease);
+  position:relative;z-index:3;
+  margin:0 5px;
+}
+.fscroll-btn:hover{
+  border-color:var(--blue);
+  color:#fff;
+  background:var(--blue);
+  box-shadow:0 4px 16px rgba(37,99,235,.30), 0 0 0 4px rgba(37,99,235,.10);
+  transform:scale(1.1);
+}
+.fscroll-btn:active{transform:scale(.93)}
+.fscroll-btn.fscroll-hidden{
+  opacity:0;
+  pointer-events:none;
+  transform:scale(.75);
+}
+
 .ftag{padding:5px 13px;border-radius:999px;font-size:.74rem;font-weight:500;cursor:pointer;transition:all .2s var(--ease);border:1.5px solid var(--border);background:var(--white);color:var(--warm-gray);font-family:var(--ff-b);box-shadow:var(--shadow-sm);white-space:nowrap;flex-shrink:0}
 .ftag:hover{border-color:var(--blue);color:var(--brown);background:var(--blue-bg)}
 .ftag.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(37,99,235,.3)}
