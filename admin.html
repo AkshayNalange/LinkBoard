@@ -8,33 +8,60 @@
 </head>
 <body>
 
-<div class="mesh">
-  <div class="mesh-grid"></div>
-  <div class="mesh-orb"></div>
-</div>
-
-<!-- LOGIN -->
+<!-- ═══════ ART DECO LOGIN ═══════ -->
 <div class="login-screen" id="loginScreen">
+  <!-- Animated rays bg -->
+  <div class="login-rays"></div>
+
+  <!-- Floating geometric shapes -->
+  <div class="login-geo g1"></div>
+  <div class="login-geo g2"></div>
+  <div class="login-geo g3"></div>
+  <div class="login-geo g4"></div>
+
   <div class="login-box">
-    <div class="login-badge">🔑</div>
-    <h2 class="login-title">Admin Access</h2>
-    <p class="login-sub">Enter your password to continue</p>
-    <input class="login-field" id="loginInput" type="password" placeholder="••••••••" autocomplete="current-password"/>
-    <button class="login-btn" id="loginBtn">Enter Dashboard</button>
-    <p class="login-err" id="loginErr"></p>
+    <!-- Animated header -->
+    <div class="login-header-bar">
+      <!-- Compass rose animation -->
+      <div class="compass">
+        <div class="compass-ring">
+          <!-- ticks -->
+          <div class="compass-tick" style="transform:rotate(0deg) translateX(-50%);margin-left:50%;top:4px;height:12px;background:rgba(255,255,255,.9)"></div>
+          <div class="compass-tick" style="transform:rotate(90deg) translateX(-50%);margin-left:50%;top:4px;height:8px"></div>
+          <div class="compass-tick" style="transform:rotate(180deg) translateX(-50%);margin-left:50%;top:4px;height:8px"></div>
+          <div class="compass-tick" style="transform:rotate(270deg) translateX(-50%);margin-left:50%;top:4px;height:8px"></div>
+        </div>
+        <div class="compass-inner"></div>
+        <div class="compass-dot"></div>
+      </div>
+      <div class="login-hdr-title">Admin Access</div>
+      <div class="login-hdr-sub">LinkBoard Control Panel</div>
+    </div>
+
+    <!-- Form -->
+    <div class="login-form-area">
+      <div class="login-field-wrap">
+        <label class="login-field-label">Password</label>
+        <input class="login-field" id="loginInput" type="password" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <div class="login-divider">Secured Access</div>
+      <button class="login-btn" id="loginBtn">Enter Dashboard →</button>
+      <p class="login-err" id="loginErr"></p>
+    </div>
   </div>
 </div>
 
+<!-- ═══════ ADMIN PANEL ═══════ -->
 <div class="wrap" id="adminWrap" style="display:none">
 
   <!-- HEADER -->
   <header class="header">
     <div class="header-inner">
       <a href="index.html" class="logo">
-        <div class="logo-icon">LB</div>
-        <div>
+        <div class="logo-emblem">LB</div>
+        <div class="logo-text">
           <div class="logo-name">Link<span>Board</span></div>
-          <div class="logo-tag">// admin panel</div>
+          <div class="logo-sub">// Admin Panel</div>
         </div>
       </a>
       <div class="header-right">
@@ -42,7 +69,7 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           View Site
         </a>
-        <button class="hbtn" id="logoutBtn">
+        <button class="hbtn primary" id="logoutBtn">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Logout
         </button>
@@ -50,13 +77,13 @@
     </div>
   </header>
 
-  <!-- ADMIN SHELL -->
+  <!-- ADMIN SHELL: sidebar + main -->
   <div class="admin-shell">
 
-    <!-- SIDEBAR -->
+    <!-- ── SIDEBAR ── -->
     <aside class="sidebar">
       <div class="sb-section">
-        <p class="sb-lbl">Overview</p>
+        <div class="sb-lbl">Overview</div>
         <div class="sb-stat">
           <div class="sb-icon a">📄</div>
           <div>
@@ -65,7 +92,7 @@
           </div>
         </div>
         <div class="sb-stat">
-          <div class="sb-icon b">🏷️</div>
+          <div class="sb-icon b">🏷</div>
           <div>
             <div class="sb-val" id="sbCats">—</div>
             <div class="sb-lbl2">Categories</div>
@@ -81,68 +108,87 @@
       </div>
 
       <div class="sb-section">
-        <p class="sb-lbl">Filter by Category</p>
-        <div class="sb-cats" id="sbCatList"></div>
+        <div class="sb-lbl">Browse by Category</div>
+        <div class="sb-cats" id="sbCatList">
+          <p style="font-size:.75rem;color:var(--warm-gray2);padding:4px 2px">No posts yet</p>
+        </div>
       </div>
     </aside>
 
-    <!-- MAIN -->
+    <!-- ── MAIN ── -->
     <main class="admin-main">
 
       <!-- CREATE FORM -->
       <div class="form-card">
-        <div class="form-head">
+        <div class="form-card-header">
           <div class="fh-icon">✦</div>
-          <div class="fh-title">New Post</div>
+          <div class="fh-title">Publish New Post</div>
+          <span class="fh-sub">Posted as "Space Pirate"</span>
         </div>
-        <div class="form-grid">
-          <div class="fg full">
-            <label class="fg-label">Title <span class="req">*</span></label>
-            <input class="fg-input" id="fTitle" type="text" placeholder="Post title…"/>
-          </div>
-          <div class="fg full">
-            <label class="fg-label">Description</label>
-            <textarea class="fg-ta" id="fDesc" placeholder="Brief description…" rows="3"></textarea>
-          </div>
-          <div class="fg full">
-            <label class="fg-label">URL <span class="req">*</span></label>
-            <input class="fg-input" id="fUrl" type="url" placeholder="https://…"/>
-          </div>
-          <div class="fg">
-            <label class="fg-label">Category <span class="req">*</span></label>
-            <input class="fg-input" id="fCat" type="text" placeholder="e.g. Tutorial, Docs…" list="catList"/>
-            <datalist id="catList"></datalist>
-          </div>
-          <div class="fg">
-            <label class="fg-label">Tags</label>
-            <div class="tags-field" id="tagsField">
-              <input class="tags-bare" id="tagsInput" type="text" placeholder="Type + Enter…"/>
+        <div class="form-body">
+          <div class="form-grid">
+
+            <div class="fg full">
+              <label class="fg-label">Title <span class="req">*</span></label>
+              <input class="fg-input" id="fTitle" type="text" placeholder="Post title…"/>
             </div>
-            <p class="fg-hint">Enter or comma to add a tag</p>
-          </div>
+
+            <div class="fg full">
+              <label class="fg-label">Description</label>
+              <textarea class="fg-ta" id="fDesc" rows="3" placeholder="Brief description of this resource…"></textarea>
+            </div>
+
+            <div class="fg full">
+              <label class="fg-label">URL / Link <span class="req">*</span></label>
+              <input class="fg-input" id="fUrl" type="url" placeholder="https://…"/>
+            </div>
+
+            <!-- MULTI-SELECT CATEGORY -->
+            <div class="fg">
+              <label class="fg-label">Categories <span class="req">*</span></label>
+              <div class="multi-select-wrap" id="catWrap">
+                <div class="multi-select-trigger" id="catTrigger">
+                  <span class="ms-placeholder" id="catPlaceholder">Select categories…</span>
+                  <svg class="ms-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="ms-dropdown" id="catDropdown">
+                  <!-- populated by JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- PREDEFINED TAGS -->
+            <div class="fg">
+              <label class="fg-label">Tags <span style="color:var(--warm-gray2);font-weight:400">(select all that apply)</span></label>
+              <div class="tags-grid-wrap">
+                <div class="tags-grid" id="tagsGrid">
+                  <!-- populated by JS -->
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /form-grid -->
+
+          <button class="btn-pub" id="submitBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Publish Post
+          </button>
         </div>
-        <button class="btn-pub" id="submitBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Publish Post
-        </button>
       </div>
 
-      <!-- POSTS LIST -->
-      <div>
-        <div class="pts-head">
-          <span class="pts-title">Published Posts</span>
-          <span class="pts-badge" id="ptsCount">0 posts</span>
-        </div>
-        <div class="plist" id="plist">
-          <div class="loader" style="grid-column:unset">
-            <div class="ld"></div><div class="ld"></div><div class="ld"></div>
-          </div>
+      <!-- FEED -->
+      <div class="feed-head">
+        <span class="feed-title">Published Posts</span>
+        <span class="feed-badge" id="feedCount">0 posts</span>
+      </div>
+      <div class="feed" id="feed">
+        <div class="loader" style="display:flex;padding:2rem 0">
+          <div class="ld"></div><div class="ld"></div><div class="ld"></div>
         </div>
       </div>
 
     </main>
   </div><!-- /admin-shell -->
-
 </div><!-- /wrap -->
 
 <div class="toast" id="toast">
