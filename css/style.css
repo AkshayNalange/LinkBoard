@@ -359,6 +359,12 @@ img{max-width:100%}
 
 .btn-del{margin-left:auto;padding:5px 13px;background:transparent;color:var(--red);border:1.5px solid rgba(225,29,72,.25);border-radius:999px;font-size:.74rem;cursor:pointer;transition:all .2s;font-family:var(--ff-b);font-weight:600;white-space:nowrap;touch-action:manipulation}
 .btn-del:hover{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 3px 12px rgba(225,29,72,.3)}
+.btn-edit{display:inline-flex;align-items:center;gap:4px;padding:5px 13px;background:transparent;color:var(--blue);border:1.5px solid rgba(37,99,235,.25);border-radius:999px;font-size:.74rem;cursor:pointer;transition:all .2s;font-family:var(--ff-b);font-weight:600;white-space:nowrap;touch-action:manipulation}
+.btn-edit:hover{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 3px 12px rgba(37,99,235,.3)}
+.btn-cancel-edit{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:transparent;color:var(--warm-gray);border:1.5px solid var(--border2);border-radius:999px;font-size:.74rem;cursor:pointer;transition:all .2s;font-family:var(--ff-b);font-weight:600;white-space:nowrap}
+.btn-cancel-edit:hover{background:var(--warm-gray);color:#fff;border-color:var(--warm-gray)}
+.form-card.editing{border:2px solid var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.08)}
+.form-card.editing .form-card-header{background:linear-gradient(135deg,#EFF6FF,#DBEAFE)}
 
 /* ── ANIMATIONS ───────────────────────────────────── */
 @keyframes riseIn{to{opacity:1;transform:translateY(0)}}
