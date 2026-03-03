@@ -129,8 +129,24 @@
             </div>
 
             <div class="fg full">
-              <label class="fg-label">URL / Link <span class="req">*</span></label>
-              <input class="fg-input" id="fUrl" type="url" placeholder="https://…" autocomplete="off" inputmode="url"/>
+              <label class="fg-label">Links <span class="req">*</span>
+                <span style="color:var(--warm-gray2);font-weight:400;text-transform:none;letter-spacing:0">(add one or more)</span>
+              </label>
+              <div id="linksContainer">
+                <div class="link-row" data-index="0">
+                  <div class="link-row-fields">
+                    <input class="fg-input link-label-input" type="text" placeholder="Label (e.g. Main Site, GitHub, PDF…)" autocomplete="off"/>
+                    <input class="fg-input link-url-input" type="url" placeholder="https://…" autocomplete="off" inputmode="url"/>
+                  </div>
+                  <button class="btn-remove-link" onclick="removeLinkRow(this)" title="Remove" style="display:none">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+              </div>
+              <button class="btn-add-link" id="addLinkBtn" type="button" onclick="addLinkRow()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Another Link
+              </button>
             </div>
 
             <!-- Multi-select categories -->
