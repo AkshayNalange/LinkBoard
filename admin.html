@@ -1,73 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Admin — LinkBoard</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
 
-  <!-- LOGIN OVERLAY -->
-  <div class="login-overlay" id="loginOverlay">
-    <div class="login-card">
-      <div class="login-icon">🔐</div>
-      <h2 class="login-title">Admin Access</h2>
-      <p class="login-sub">Enter your admin password to continue</p>
-      <input
-        type="password"
-        class="login-input"
-        id="loginInput"
-        placeholder="••••••••"
-        autocomplete="current-password"
-      />
-      <button class="login-btn" id="loginBtn">Authenticate</button>
-      <p class="login-error" id="loginError"></p>
-    </div>
+<div class="mesh">
+  <div class="mesh-grid"></div>
+  <div class="mesh-orb"></div>
+</div>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-badge">🔑</div>
+    <h2 class="login-title">Admin Access</h2>
+    <p class="login-sub">Enter your password to continue</p>
+    <input class="login-field" id="loginInput" type="password" placeholder="••••••••" autocomplete="current-password"/>
+    <button class="login-btn" id="loginBtn">Enter Dashboard</button>
+    <p class="login-err" id="loginErr"></p>
   </div>
+</div>
+
+<div class="wrap" id="adminWrap" style="display:none">
 
   <!-- HEADER -->
   <header class="header">
     <div class="header-inner">
       <a href="index.html" class="logo">
-        <span class="logo-mark">Link<span>Board</span></span>
-        <span class="logo-sub">// Admin Panel</span>
+        <div class="logo-icon">LB</div>
+        <div>
+          <div class="logo-name">Link<span>Board</span></div>
+          <div class="logo-tag">// admin panel</div>
+        </div>
       </a>
-      <nav class="header-nav">
-        <a href="index.html" class="nav-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          View Public
+      <div class="header-right">
+        <a href="index.html" class="hbtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          View Site
         </a>
-        <button class="nav-btn" id="logoutBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <button class="hbtn" id="logoutBtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Logout
         </button>
-      </nav>
+      </div>
     </div>
   </header>
 
-  <!-- ADMIN LAYOUT -->
-  <div class="admin-layout" id="adminContent" style="display:none">
+  <!-- ADMIN SHELL -->
+  <div class="admin-shell">
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
-      <p class="sidebar-title">// dashboard</p>
-      <div class="stat-card">
-        <div class="stat-card-num" id="adminStatPosts">—</div>
-        <div class="stat-card-label">Total Posts</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-num" id="adminStatCats">—</div>
-        <div class="stat-card-label">Categories</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-num" id="adminStatTags">—</div>
-        <div class="stat-card-label">Unique Tags</div>
+      <div class="sb-section">
+        <p class="sb-lbl">Overview</p>
+        <div class="sb-stat">
+          <div class="sb-icon a">📄</div>
+          <div>
+            <div class="sb-val" id="sbPosts">—</div>
+            <div class="sb-lbl2">Total Posts</div>
+          </div>
+        </div>
+        <div class="sb-stat">
+          <div class="sb-icon b">🏷️</div>
+          <div>
+            <div class="sb-val" id="sbCats">—</div>
+            <div class="sb-lbl2">Categories</div>
+          </div>
+        </div>
+        <div class="sb-stat">
+          <div class="sb-icon c">⚡</div>
+          <div>
+            <div class="sb-val" id="sbTags">—</div>
+            <div class="sb-lbl2">Unique Tags</div>
+          </div>
+        </div>
       </div>
 
-      <div style="margin-top:2rem">
-        <p class="sidebar-title">// quick filters</p>
-        <div id="adminFilterTags" style="display:flex;flex-direction:column;gap:0.4rem"></div>
+      <div class="sb-section">
+        <p class="sb-lbl">Filter by Category</p>
+        <div class="sb-cats" id="sbCatList"></div>
       </div>
     </aside>
 
@@ -76,62 +91,65 @@
 
       <!-- CREATE FORM -->
       <div class="form-card">
-        <h2 class="form-title"><span>+</span> New Post</h2>
+        <div class="form-head">
+          <div class="fh-icon">✦</div>
+          <div class="fh-title">New Post</div>
+        </div>
         <div class="form-grid">
-          <div class="form-group full">
-            <label class="form-label">Title <span class="req">*</span></label>
-            <input type="text" class="form-input" id="fTitle" placeholder="e.g. Getting Started with React Hooks" />
+          <div class="fg full">
+            <label class="fg-label">Title <span class="req">*</span></label>
+            <input class="fg-input" id="fTitle" type="text" placeholder="Post title…"/>
           </div>
-          <div class="form-group full">
-            <label class="form-label">Description</label>
-            <textarea class="form-textarea" id="fDesc" placeholder="Brief description of this resource…" rows="3"></textarea>
+          <div class="fg full">
+            <label class="fg-label">Description</label>
+            <textarea class="fg-ta" id="fDesc" placeholder="Brief description…" rows="3"></textarea>
           </div>
-          <div class="form-group full">
-            <label class="form-label">URL / Link <span class="req">*</span></label>
-            <input type="url" class="form-input" id="fUrl" placeholder="https://..." />
+          <div class="fg full">
+            <label class="fg-label">URL <span class="req">*</span></label>
+            <input class="fg-input" id="fUrl" type="url" placeholder="https://…"/>
           </div>
-          <div class="form-group">
-            <label class="form-label">Category <span class="req">*</span></label>
-            <input type="text" class="form-input" id="fCategory" placeholder="e.g. Tutorial, Docs, Article…" list="categoryList" />
-            <datalist id="categoryList"></datalist>
+          <div class="fg">
+            <label class="fg-label">Category <span class="req">*</span></label>
+            <input class="fg-input" id="fCat" type="text" placeholder="e.g. Tutorial, Docs…" list="catList"/>
+            <datalist id="catList"></datalist>
           </div>
-          <div class="form-group">
-            <label class="form-label">Tags</label>
-            <div class="tags-input-wrap" id="tagsWrap">
-              <input type="text" class="tags-real-input" id="tagsInput" placeholder="Type and press Enter…" />
+          <div class="fg">
+            <label class="fg-label">Tags</label>
+            <div class="tags-field" id="tagsField">
+              <input class="tags-bare" id="tagsInput" type="text" placeholder="Type + Enter…"/>
             </div>
-            <p class="tag-hint">Press Enter or comma to add a tag</p>
+            <p class="fg-hint">Enter or comma to add a tag</p>
           </div>
         </div>
-        <button class="btn-submit" id="submitBtn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <button class="btn-pub" id="submitBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Publish Post
         </button>
       </div>
 
       <!-- POSTS LIST -->
       <div>
-        <h3 style="font-family:var(--font-display);font-size:1.25rem;margin-bottom:1.25rem;color:var(--muted)">
-          Published Posts
-          <span id="adminPostCount" style="font-family:var(--font-mono);font-size:0.75rem;color:var(--muted);margin-left:0.5rem"></span>
-        </h3>
-        <div class="admin-posts-list" id="adminPostsList">
-          <div class="loading-wrap">
-            <div class="spinner"></div>
-            <span style="color:var(--muted);font-size:0.85rem">Loading…</span>
+        <div class="pts-head">
+          <span class="pts-title">Published Posts</span>
+          <span class="pts-badge" id="ptsCount">0 posts</span>
+        </div>
+        <div class="plist" id="plist">
+          <div class="loader" style="grid-column:unset">
+            <div class="ld"></div><div class="ld"></div><div class="ld"></div>
           </div>
         </div>
       </div>
 
     </main>
-  </div>
+  </div><!-- /admin-shell -->
 
-  <!-- TOAST -->
-  <div class="toast" id="toast">
-    <span class="toast-icon" id="toastIcon">●</span>
-    <span id="toastMsg"></span>
-  </div>
+</div><!-- /wrap -->
 
-  <script src="js/admin.js"></script>
+<div class="toast" id="toast">
+  <span class="ti" id="toastIcon">●</span>
+  <span id="toastMsg"></span>
+</div>
+
+<script src="js/admin.js"></script>
 </body>
 </html>
