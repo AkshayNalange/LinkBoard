@@ -127,10 +127,7 @@ function render(posts) {
         ${p.tags && p.tags.length ? `<div class="card-tags">${p.tags.map(t => `<span class="ctag" onclick="filterByTag('${esc(t)}')">${esc(t)}</span>`).join("")}</div>` : ""}
       </div>
       <div class="card-footer">
-        ${(p.links && p.links.length
-          ? p.links.map(l => `<a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer" class="card-link">${esc(l.label || "Open")}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>`).join("")
-          : `<a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer" class="card-link">Open<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>`
-        )}
+        ${renderLinks(p)}
         <button
           class="fire-btn${isLiked ? " liked" : ""}"
           onclick="handleLike(this, '${esc(p.id)}')"
@@ -202,6 +199,16 @@ window.filterByTag = t => {
   setFilter(t);
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
+
+function renderLinks(p) {
+  const svg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>';
+  if (p.links && p.links.length) {
+    return p.links.map(function(l) {
+      return '<a href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer" class="card-link">' + esc(l.label || 'Open') + svg + '</a>';
+    }).join('');
+  }
+  return '<a href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer" class="card-link">Open' + svg + '</a>';
+}
 
 function fmt(iso) {
   if (!iso) return "";
