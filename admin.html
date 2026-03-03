@@ -104,12 +104,16 @@
     <!-- MAIN -->
     <main class="admin-main">
 
-      <!-- CREATE FORM -->
-      <div class="form-card">
+      <!-- CREATE / EDIT FORM -->
+      <div class="form-card" id="formCard">
         <div class="form-card-header">
-          <div class="fh-icon">✦</div>
-          <div class="fh-title">Publish New Post</div>
-          <span class="fh-sub">Posted as "Space Pirate"</span>
+          <div class="fh-icon" id="fhIcon">✦</div>
+          <div class="fh-title" id="fhTitle">Publish New Post</div>
+          <span class="fh-sub" id="fhSub">Posted as "Space Pirate"</span>
+          <button class="btn-cancel-edit" id="cancelEditBtn" style="display:none;margin-left:auto;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Cancel Edit
+          </button>
         </div>
         <div class="form-body">
           <div class="form-grid">
@@ -152,8 +156,8 @@
           </div>
 
           <button class="btn-pub" id="submitBtn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Publish Post
+            <svg id="submitIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span id="submitLabel">Publish Post</span>
           </button>
         </div>
       </div>
