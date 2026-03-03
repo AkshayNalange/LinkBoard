@@ -359,6 +359,18 @@ img{max-width:100%}
 
 .btn-del{margin-left:auto;padding:5px 13px;background:transparent;color:var(--red);border:1.5px solid rgba(225,29,72,.25);border-radius:999px;font-size:.74rem;cursor:pointer;transition:all .2s;font-family:var(--ff-b);font-weight:600;white-space:nowrap;touch-action:manipulation}
 .btn-del:hover{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 3px 12px rgba(225,29,72,.3)}
+.link-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.link-row-fields{display:flex;gap:8px;flex:1;flex-wrap:wrap}
+.link-row-fields .fg-input{flex:1;min-width:120px}
+.link-row-fields .link-label-input{max-width:180px}
+.btn-remove-link{display:flex;align-items:center;justify-content:center;width:30px;height:30px;background:transparent;border:1.5px solid rgba(225,29,72,.25);border-radius:50%;color:var(--red);cursor:pointer;transition:all .2s;flex-shrink:0;padding:0}
+.btn-remove-link:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.btn-add-link{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:transparent;border:1.5px dashed var(--blue3);border-radius:999px;color:var(--blue);font-size:.76rem;font-family:var(--ff-b);font-weight:600;cursor:pointer;transition:all .2s;margin-top:2px}
+.btn-add-link:hover{background:var(--blue-bg);border-color:var(--blue);border-style:solid}
+.pc-extra-links{display:flex;flex-direction:column;gap:2px;margin-top:4px}
+.pc-url-extra{font-size:.72rem;color:var(--warm-gray2)}
+.pc-url-extra a{color:var(--blue);text-decoration:none}
+.pc-url-extra a:hover{text-decoration:underline}
 .btn-edit{display:inline-flex;align-items:center;gap:4px;padding:5px 13px;background:transparent;color:var(--blue);border:1.5px solid rgba(37,99,235,.25);border-radius:999px;font-size:.74rem;cursor:pointer;transition:all .2s;font-family:var(--ff-b);font-weight:600;white-space:nowrap;touch-action:manipulation}
 .btn-edit:hover{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 3px 12px rgba(37,99,235,.3)}
 .btn-cancel-edit{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:transparent;color:var(--warm-gray);border:1.5px solid var(--border2);border-radius:999px;font-size:.74rem;cursor:pointer;transition:all .2s;font-family:var(--ff-b);font-weight:600;white-space:nowrap}
