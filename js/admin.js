@@ -10,29 +10,42 @@ const CATEGORIES = [
 ];
 
 const PRESET_TAGS = [
-  // Programming Languages
-  "JavaScript","TypeScript","Python","Java","C++","C#","Go","Rust","Swift","Kotlin",
-  "PHP","Ruby","Scala","R","MATLAB","Bash","PowerShell","Dart","Elixir","Haskell",
-  // Web & Frontend
-  "React","Vue.js","Angular","Next.js","Svelte","HTML","CSS","Tailwind CSS","Bootstrap","WebAssembly",
-  // Backend & APIs
-  "Node.js","REST API","GraphQL","FastAPI","Django","Flask","Spring Boot","Express.js","gRPC","WebSocket",
-  // DevOps & Cloud
-  "Docker","Kubernetes","AWS","Azure","GCP","Terraform","CI/CD","DevOps","Linux","Nginx",
-  // Databases
-  "PostgreSQL","MySQL","MongoDB","Redis","Elasticsearch","SQLite","Firebase","Supabase","DynamoDB","Vector DB",
-  // AI & Data
-  "AI/ML","Deep Learning","LLM","NLP","Computer Vision","Data Science","TensorFlow","PyTorch","Pandas","NumPy",
-  // Security
-  "Security","Authentication","Cryptography","OAuth","Zero Trust","Penetration Testing","OWASP","SSL/TLS","SIEM","Cybersecurity",
-  // Tools & Practices
-  "Git","GitHub","Testing","Performance","Debugging","Code Review","Agile","System Design","Architecture","Microservices",
   // Knowledge & Learning
-  "Tutorial","Cheat Sheet","Research Paper","Case Study","Book Summary","Podcast","Course Notes","Best Practices","Interview Prep","Documentation",
-  // General Topics
-  "Productivity","Career","Open Source","UI/UX","Mobile","Networking","Blockchain","IoT","Embedded","Gaming",
+  "Tutorial", "Cheat Sheet", "Research Paper", "Case Study", "Book Summary",
+  "Course Notes", "Best Practices", "Documentation", "Interview Prep", "How-To Guide",
+  "Deep Dive", "Beginner Friendly", "Advanced", "Quick Read", "Must Read",
+
+  // Tech (Generic)
+  "AI/ML", "Web Dev", "Mobile App", "DevOps", "Cloud",
+  "Cybersecurity", "Open Source", "Software", "Tool", "Free Tool",
+  "Productivity App", "Browser Extension", "API", "Database", "UI/UX",
+
+  // Software & Services
+  "Free", "Freemium", "Paid", "Subscription", "One-Time Purchase",
+  "SaaS", "Self-Hosted", "No-Code", "Low-Code", "Open Access",
+
   // News & Updates
-  "News","Product Launch","Tech Trends","Industry Report","Opinion","Analysis","Weekly Digest","Breaking","Version Release","Changelog"
+  "News", "Breaking", "Tech Trends", "Industry Report", "Product Launch",
+  "Version Release", "Changelog", "Analysis", "Opinion", "Weekly Digest",
+
+  // Entertainment
+  "Movies", "TV Series", "Drama", "Anime", "Documentary",
+  "Streaming", "Netflix", "YouTube", "Podcast", "Short Film",
+  "Web Series", "Reality TV", "Comedy", "Thriller", "Sci-Fi",
+
+  // Gen Z & Social
+  "#viral", "#trending", "#mustsee", "#hidden gem", "#underrated",
+  "#overrated", "#ngl", "#lowkey", "#based", "#no cap",
+  "#slaps", "#goated", "#fomo", "#vibe check", "#main character",
+
+  // General Interest
+  "Health", "Finance", "Career", "Self Improvement", "Psychology",
+  "Science", "History", "Philosophy", "Design", "Art",
+  "Gaming", "Fitness", "Food", "Travel", "Environment",
+
+  // Resource Type
+  "PDF", "Video", "Article", "Newsletter", "Infographic",
+  "Template", "Dataset", "Repo", "Blog Post", "Whitepaper"
 ];
 
 let selectedCats = [];
